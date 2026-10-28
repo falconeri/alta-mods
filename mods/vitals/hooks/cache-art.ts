@@ -10,13 +10,19 @@ export type Mode = 'warm' | 'cold'
 export type Kind = 'wide' | 'stacked' | 'tight'
 
 // The band's own colours, measured from the app.
-export const BG = '#24221c'
-export const TEXT = '#e8e2d2'
-export const MUTED = '#8d8775'
-export const EMPTY = '#4a463b'
-export const LINE = '#36332b'
-export const ORANGE = '#ff6b1a'
-export const YELLOW = '#f5a623'
+export type Theme = 'dark' | 'light'
+
+// The drawings sit straight on the app's own background (they paint none), so their
+// ink has to suit it: light ink for a dark theme, dark ink for a light one.
+const PALETTES = {
+  dark: { TEXT: '#e8e2d2', MUTED: '#8d8775', EMPTY: '#4a463b', LINE: '#36332b', isLight: false },
+  light: { TEXT: '#2b2824', MUTED: '#6f6a5c', EMPTY: '#d6d1c4', LINE: '#e2ddd0', isLight: true },
+}
+/** The ink in use. Set once per draw with `setTheme`; every drawing below reads it. */
+export const PAL = { ...PALETTES.dark }
+export const setTheme = (theme: Theme): void => {
+  Object.assign(PAL, PALETTES[theme])
+}
 
 // The cache's two states in a muted shade: desaturated so they sit
 // beside the band's own orange and yellow.
@@ -138,7 +144,8 @@ export const roboShapes = (x: number, y: number, size: number, mode: Mode): stri
   }
   // Cold: still, pale, inside a rounded ice block with icicles and one twinkle.
   const u = size / 12.2
-  const ice = mix(HUE.cold, '#ffffff', 0.5)
+  // Pale ice on a dark theme; a deeper blue on a light one, where pale would vanish.
+  const ice = PAL.isLight ? mix(HUE.cold, '#000000', 0.25) : mix(HUE.cold, '#ffffff', 0.5)
   const ox = x + 1.6 * u
   const oy = y + 1.6 * u
   const bx = -1.2 * u
@@ -181,10 +188,10 @@ export const cardSvg = (v: CacheView, kind: Kind, W: number): { source: string; 
   const FIRE = HUE.warm
   const ICE = HUE.cold
   const t = (x: number, y: number, str: string, o: TextOpts = {}) =>
-    `<text x="${x}" y="${y}" font-size="${o.size || 11}" font-weight="${o.w || 700}" fill="${o.fill || MUTED}"` +
+    `<text x="${x}" y="${y}" font-size="${o.size || 11}" font-weight="${o.w || 700}" fill="${o.fill || PAL.MUTED}"` +
     ` letter-spacing="${o.ls ?? 0}" text-anchor="${o.anchor || 'start'}">${str}</text>`
-  const vline = (x: number, y: number, h: number) => `<rect x="${x}" y="${y}" width="1" height="${h}" fill="${LINE}"/>`
-  const hline = (y: number) => `<rect x="13" y="${y}" width="${W - 26}" height="1" fill="${LINE}"/>`
+  const vline = (x: number, y: number, h: number) => `<rect x="${x}" y="${y}" width="1" height="${h}" fill="${PAL.LINE}"/>`
+  const hline = (y: number) => `<rect x="13" y="${y}" width="${W - 26}" height="1" fill="${PAL.LINE}"/>`
 
   // How long since the last reply, with Robo and the chip in the header.
   const zoneIdle = (x: number, y: number, w: number, o: { compact?: boolean; header?: boolean } = {}) => {
@@ -197,7 +204,7 @@ export const cardSvg = (v: CacheView, kind: Kind, W: number): { source: string; 
     } else {
       g += t(x, y + k.lab, 'IDLE', { ls: 1.4 })
     }
-    g += t(x, y + k.big, v.idle, { size: k.bs, w: 600, fill: TEXT })
+    g += t(x, y + k.big, v.idle, { size: k.bs, w: 600, fill: PAL.TEXT })
     const ly = y + k.line
     const x0 = x + 3
     const x1 = x + w - 14
@@ -210,7 +217,7 @@ export const cardSvg = (v: CacheView, kind: Kind, W: number): { source: string; 
     } else {
       const now = x0 + (x1 - x0) * Math.min(1, v.idleMin / v.ttlMin)
       g += `<line x1="${x0}" y1="${ly}" x2="${now}" y2="${ly}" stroke="${FIRE}" stroke-width="5" stroke-linecap="round"/>`
-      for (let cx = now + 12; cx <= x1 - 12; cx += 9) g += `<circle cx="${cx}" cy="${ly}" r="2.2" fill="${EMPTY}"/>`
+      for (let cx = now + 12; cx <= x1 - 12; cx += 9) g += `<circle cx="${cx}" cy="${ly}" r="2.2" fill="${PAL.EMPTY}"/>`
       g += `<circle cx="${x1}" cy="${ly}" r="4.5" fill="none" stroke="${ICE}" stroke-width="2"/>`
       g += t(x, y + k.cap, 'last reply', { size: 12, w: 500 })
       g += t(x1 + 5, y + k.cap, `cold in ${Math.max(0, v.ttlMin - v.idleMin)}m`, { size: 12, w: 600, fill: ICE, anchor: 'end' })
@@ -223,12 +230,12 @@ export const cardSvg = (v: CacheView, kind: Kind, W: number): { source: string; 
     const share = v.window > 0 ? Math.min(1, v.tokens / v.window) : 0
     let g = t(x, y + (o.compact ? 24 : 30), cold ? 'RE-CACHE' : 'IN CACHE', { ls: 1.4 })
     const big = (yy: number, bs: number, ts: number) =>
-      `<text x="${x}" y="${yy}" font-weight="600" fill="${TEXT}"><tspan font-size="${bs}">${tok(v.tokens)}</tspan><tspan font-size="${ts}" font-weight="500" fill="${MUTED}" dx="7">tokens</tspan></text>`
+      `<text x="${x}" y="${yy}" font-weight="600" fill="${PAL.TEXT}"><tspan font-size="${bs}">${tok(v.tokens)}</tspan><tspan font-size="${ts}" font-weight="500" fill="${PAL.MUTED}" dx="7">tokens</tspan></text>`
     const grid = (gx: number, gy: number, cols: number, step: number) => {
       let d = ''
       const lit = Math.round(share * cols * 2)
       for (let r = 0; r < 2; r++)
-        for (let c = 0; c < cols; c++) d += `<circle cx="${gx + 3 + c * step}" cy="${gy + r * 9}" r="3" fill="${r * cols + c < lit ? HUEM : EMPTY}"/>`
+        for (let c = 0; c < cols; c++) d += `<circle cx="${gx + 3 + c * step}" cy="${gy + r * 9}" r="3" fill="${r * cols + c < lit ? HUEM : PAL.EMPTY}"/>`
       return d
     }
     if (o.compact) {
@@ -260,10 +267,10 @@ export const cardSvg = (v: CacheView, kind: Kind, W: number): { source: string; 
       const bx = x + i * col
       for (let r = 0; r < k.rows; r++)
         for (let d = 0; d < 3; d++)
-          g += `<circle cx="${bx + 3 + d * 8}" cy="${y + k.base - r * k.step}" r="2.8" fill="${r < n ? (c.now ? HUEM : MUTED) : EMPTY}"/>`
+          g += `<circle cx="${bx + 3 + d * 8}" cy="${y + k.base - r * k.step}" r="2.8" fill="${r < n ? (c.now ? HUEM : PAL.MUTED) : PAL.EMPTY}"/>`
       if (c.now) g += chipShapes(bx + 30, y + k.chip, 'NOW', HUEM, 10, 0.8).svg
-      g += t(bx + 30, y + k.price, fmtTimes(c.times), { size: 17, w: c.now ? 700 : 500, fill: c.now ? TEXT : MUTED })
-      g += t(bx + 30, y + k.name, c.word, { size: 11, w: 700, fill: c.now ? HUEM : MUTED, ls: 0.8 })
+      g += t(bx + 30, y + k.price, fmtTimes(c.times), { size: 17, w: c.now ? 700 : 500, fill: c.now ? PAL.TEXT : PAL.MUTED })
+      g += t(bx + 30, y + k.name, c.word, { size: 11, w: 700, fill: c.now ? HUEM : PAL.MUTED, ls: 0.8 })
     })
     return g
   }
@@ -295,7 +302,7 @@ export const cardSvg = (v: CacheView, kind: Kind, W: number): { source: string; 
       zoneCost(13, 182, (W - 26) / 4, { compact: true })
   }
   const h = H + CARD_TOP
-  const body = `<rect width="${W}" height="${h}" fill="${BG}"/><g transform="translate(0 ${CARD_TOP})">` + hline(0) + g + '</g>'
+  const body = `<g transform="translate(0 ${CARD_TOP})">` + hline(0) + g + '</g>'
   const alt = cold
     ? `Cache cold. Idle ${v.idle}. Next message re-caches ${tok(v.tokens)} tokens.`
     : `Cache warm. Goes cold in ${Math.max(0, v.ttlMin - v.idleMin)} minutes. ${tok(v.tokens)} tokens cached.`

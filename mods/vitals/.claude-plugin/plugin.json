@@ -1,6 +1,6 @@
 {
   "name": "vitals",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "A band above your prompt, slim or detailed: usage left in the 5-hour and 7-day windows with reset times and a pace check that warns before you run out, how full the context is, and whether the prompt cache is warm or cold. The terminal shows the git branch; the desktop app gets the ribbon-style art.",
   "author": {
     "name": "Alta Falconeri"
@@ -38,6 +38,17 @@
         "symbol",
         "nerd font",
         "text"
+      ]
+    },
+    "desktopTheme": {
+      "type": "string",
+      "title": "Theme for the desktop art",
+      "description": "Which theme the desktop drawings (Robo, chips, cache card) are inked for. 'auto' follows the app's theme setting; pick light or dark if auto guesses wrong. Text and the button always follow the app.",
+      "default": "auto",
+      "options": [
+        "auto",
+        "light",
+        "dark"
       ]
     }
   }

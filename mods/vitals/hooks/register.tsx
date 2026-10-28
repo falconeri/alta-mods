@@ -2,8 +2,8 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import type { CacheFacts, ContextFacts, Look, Window } from '../types'
-import { BG, EMPTY, HUE, MUTED, ORANGE, ROBO_SIZE, TEXT, WORD, YELLOW, bandPx, cardSvg, chipSvg, kindOf, roboSvg } from './cache-art'
-import type { CacheView } from './cache-art'
+import { HUE, ROBO_SIZE, WORD, bandPx, cardSvg, chipSvg, kindOf, roboSvg, setTheme } from './cache-art'
+import type { CacheView, Theme } from './cache-art'
 import { asked, bar, branchOf, cacheView, coldMultiple, dots, fmtAt, fmtSpan, fmtTimes, paceOf, tok } from './figures'
 import type { Pace } from './figures'
 
@@ -88,6 +88,27 @@ const findBranch = async ($: EngineInterface): Promise<string | null> => {
   return null
 }
 
+let themeAt = -Infinity
+let themeIs: Theme = 'dark'
+
+/**
+ * Which theme the drawings should suit. The setting wins when it names one; on auto the
+ * app's theme setting decides ("light" in its name means light), and anything else is dark.
+ * Asked at most once a minute.
+ */
+const themeOf = async ($: EngineInterface, now: number, wanted?: string): Promise<Theme> => {
+  if (wanted === 'light' || wanted === 'dark') return wanted
+  if (now - themeAt < 60_000) return themeIs
+  themeAt = now
+  try {
+    const row = (await $.config.list()).find(r => r.key === 'theme')
+    themeIs = String(row?.value ?? '').toLowerCase().includes('light') ? 'light' : 'dark'
+  } catch {
+    // keep the last answer
+  }
+  return themeIs
+}
+
 const refreshBranch = async ($: EngineInterface): Promise<void> => {
   const found = await findBranch($)
   await update($, branch, () => found)
@@ -118,6 +139,7 @@ export const register: Register = (on, options) => {
   const ttlMs = ttlMin * 60_000
   const lowAt = asked(options.lowAt, DEFAULT_LOW_AT)
   const startLook: Look = options.startIn === 'detail' ? 'detail' : 'slim'
+  const desktopTheme = typeof options.desktopTheme === 'string' ? options.desktopTheme : 'auto'
   const icon = typeof options.branchIcon === 'string' ? (ICONS[options.branchIcon] ?? ICONS.symbol!) : ICONS.symbol!
   const times = fmtTimes(coldMultiple(ttlMin))
 
@@ -217,15 +239,18 @@ export const register: Register = (on, options) => {
       ) : null
 
     // ---------- skin ----------
-    const dim = art ? { color: MUTED } : { dimColor: true }
-    const faint = art ? { color: EMPTY } : { dimColor: true }
-    const ink = art ? TEXT : undefined
+    // Text, the Button and the layout take the app's own theme colours on every surface, so
+    // they read on a light theme and a dark one. Only the drawings (Robo, the chips, the
+    // card) have ink of their own, and it is set to suit the theme.
+    const dim = { dimColor: true }
+    const faint = { dimColor: true }
+    const ink = undefined
     const hue = art
-      ? { low: '#e5484d', mid: YELLOW, ok: '#7bc47f', warm: HUE.warm, cold: HUE.cold }
+      ? { low: 'error', mid: 'warning', ok: 'success', warm: HUE.warm, cold: HUE.cold }
       : { low: 'error', mid: 'warning', ok: 'success', warm: 'success', cold: 'suggestion' }
-    const frame = art ? { backgroundColor: BG } : {}
-    const own = (kind: string) => (art ? (kind === 'seven_day' ? ORANGE : YELLOW) : undefined)
-    const toneOf = (kind: string, left: number): string | undefined => (left < lowAt ? hue.low : left < 40 ? hue.mid : own(kind))
+    const frame = {}
+    const toneOf = (_kind: string, left: number): string | undefined => (left < lowAt ? hue.low : left < 40 ? hue.mid : undefined)
+    if (art) setTheme(await themeOf($, now, desktopTheme))
 
     const button = (
       <Box key="look" flexShrink={0}>

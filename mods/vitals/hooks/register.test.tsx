@@ -202,3 +202,22 @@ test('before the first reply the band says what it is waiting for, on both skins
     await ui.unmount()
   }
 })
+
+test('the desktop drawings are inked for the app theme, light or dark', async ($, on) => {
+  let theme = 'light'
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.usage', () => ({ value: usage(22, 48) }))
+  on('classic.SessionStart', () => ({}))
+  on('config.list', () => ({ value: [{ key: 'theme', label: 'Theme', kind: 'choice', value: theme, isLocked: false }] }))
+  mock.clock(on, { now: NOW })
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+  await $.classic.SessionStart({ source: 'resume', seconds_since_last_response: 600, context_tokens: 240_000 } as never)
+
+  const light = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  await light.press({ key: 'look-toggle' })
+  const lightCard = JSON.stringify(await light.findAll({ type: 'Svg' }))
+  expect(lightCard, 'light theme: dark ink').toContain('#2b2824')
+  expect(lightCard, 'light theme: no fixed dark card').not.toContain('#24221c')
+  await light.unmount()
+})
+

@@ -30,7 +30,7 @@ CACHE ●●●●●●●●●●●●●●●●······· warm · 42m
 
 | | Terminal | Desktop app (and VS Code, mobile) |
 | --- | --- | --- |
-| Look | Text in your theme's own colors, so it reads on light and dark | A warm dark card with the art from the [ribbon](https://github.com/robonuggets/ribbon) mod |
+| Look | Text in your theme's own colors, so it reads on light and dark | The same text and button in the app's own colors, plus the art from the [ribbon](https://github.com/robonuggets/ribbon) mod, inked for a light or a dark theme |
 | Cache | The word `CACHE`, `warm` or `cold` | Robo bobbing when warm, frozen in ice when cold, and a WARM or COLD chip |
 | Detail look | Text rows, including a draining cache bar | The usage rows plus the cache card: idle time, tokens in cache as a dot grid of the context window, and the next message as a warm read against a cold re-cache, yours marked **NOW** |
 | Git branch | Shown first on the band, with an icon, because the terminal has no sidebar for it | Hidden: the app's sidebar already shows it |
@@ -48,6 +48,7 @@ The defaults work. Optional settings, in `/config`:
 | --- | --- | --- |
 | Start each session in | `slim` | `slim` or `detail`. |
 | Prompt cache lasts (minutes) | `60` | Set `5` if your plan has the 5-minute cache. |
+| Theme for the desktop art | `auto` | `auto`, `light` or `dark`: the ink of Robo, the chips and the cache card. |
 | Branch icon (terminal) | `symbol` | What stands before the branch: `symbol` (⎇), `nerd font` (the git glyph, needs a Nerd Font) or `text` (`git:`). |
 | Warn when a window has less than this % left | `15` | Where a window turns red and shows **LOW**. |
 
@@ -65,7 +66,7 @@ The defaults work. Optional settings, in `/config`:
 - **Pace needs a little history.** It stays quiet until about 3% of a window has passed, and only warns when the burn so far would empty the window before it resets.
 - **Narrow windows.** The slim look takes two rows when one row would not fit, and each window gets its own row under 56 columns. The Details button stays on screen at every width.
 - **Clear and compact** reset the cache and context readings.
-- **The desktop card is dark in both themes.** It is a self-contained card with its own colors, so it stays readable on a light theme too.
+- **Light and dark on desktop.** The band has no background of its own and its text and button take the app's colors. The drawings are inked to suit the theme: *Theme for the desktop art* is `auto` by default and follows the app's theme setting; set it to `light` or `dark` if auto guesses wrong.
 
 ## Troubleshooting
 
