@@ -1,6 +1,6 @@
 {
   "name": "prompt-shaper",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A \"Shape prompt\" button above the prompt box. Press it when you want the prompt you typed turned into a clear brief: it asks only the questions that change the outcome (each with a default), then fills the box with the job, the why, the guardrails, what done means and the assumptions. Never automatic: without a press, Enter sends your prompt as it is.",
   "author": {
     "name": "Alta Falconeri"

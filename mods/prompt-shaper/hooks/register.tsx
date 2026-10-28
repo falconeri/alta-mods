@@ -210,10 +210,11 @@ export const register: Register = (on, options) => {
 
     const { Box, Button, Text } = $.ui.resolve(e)
     const isWorking = await read($, working)
-    // A mod cannot draw inside the prompt box; the nearest seat is the band above it,
-    // with the button pushed to the right edge.
+    // A mod cannot draw inside the prompt box; the nearest seat is the band above it. It is
+    // framed and named so it reads as its own mod, apart from any other band (vitals).
     const row = (
-      <Box key="prompt-shaper" flexDirection="row" paddingX={1} alignItems="center">
+      <Box key="prompt-shaper" flexDirection="row" paddingX={1} alignItems="center" borderStyle="round" borderDimColor>
+        <Text dimColor>prompt-shaper</Text>
         <Box key="grow" flexGrow={1} />
         {isWorking ? (
           <Text dimColor>Shaping your prompt…</Text>

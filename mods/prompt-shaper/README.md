@@ -23,7 +23,7 @@ You read the brief in the prompt box, edit it if you want, and press Enter. Noth
 
 If your prompt is already clear, you get a short notice and the box is left alone. If you dismiss a question or something fails, your original words are still in the box, untouched.
 
-The button sits on the band above the prompt box, not inside it: mods cannot draw inside the box itself.
+The button sits in its own framed, named strip above the prompt box (apart from other bands such as vitals), not inside the box: mods cannot draw inside the box itself.
 
 ## The working rules
 
