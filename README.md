@@ -7,7 +7,7 @@ My personal [Claude Code](https://claude.com/claude-code) mods, shared as one pl
 | Mod | What it does |
 | --- | --- |
 | [`switch-mods`](mods/switch-mods) | Type `/amods` to open a panel that switches every installed plugin and mod on or off. Works in the terminal and the desktop app. |
-| [`prompt-shaper`](mods/prompt-shaper) | Catches a long, messy prompt, asks only the questions that change the outcome (each with a default), then fills the prompt box with a clear brief: the job, the why, the guardrails, what done means and the assumptions, plus working rules for Claude. |
+| [`prompt-shaper`](mods/prompt-shaper) | A Shape prompt button above the prompt box. Press it to turn what you typed into a clear brief: it asks only the questions that change the outcome (each with a default), then fills the prompt box with the job, the why, the guardrails, what done means and the assumptions, plus working rules for Claude. Never automatic. |
 | [`sess-handoff`](mods/sess-handoff) | Writes a detailed handoff prompt of the whole chat at 250k tokens, when the prompt cache goes cold, or when you type `sess-handoff`. Waits for subagents to finish, asks before opening a fresh chat seeded with it, and can copy it for a teammate. |
 | [`vitals`](mods/vitals) | A band above your prompt, slim or detailed: usage left in the 5-hour and 7-day windows with reset times and a pace warning before you run out, how full the context is, and whether the prompt cache is warm or cold. Git branch and plain text in the terminal, ribbon-style art on desktop, light or dark. |
 
@@ -19,9 +19,9 @@ None of the mods needs an account, key or setup beyond installing it: the defaul
 - Use it: type `/amods`, press **On** / **Off** on a row, then **Apply**.
 - Settings: none.
 
-**[`prompt-shaper`](mods/prompt-shaper)** turns a long, messy prompt into a clear brief before Claude reads it.
-- Use it: just send a prompt of 60 words or more. Answer the few questions it asks (each has a default), then check the brief it puts in the prompt box and press Enter. Start a prompt with `>> ` to skip it.
-- Settings (in `/config`): shortest prompt to shape (60 words), most questions to ask (3), add the working rules (on), model (haiku).
+**[`prompt-shaper`](mods/prompt-shaper)** turns a messy prompt into a clear brief when you ask it to, and never otherwise.
+- Use it: type your prompt, then press the **Shape prompt** button on the right above the prompt box. Answer the few questions it asks (each has a default), then check the brief it puts in the prompt box and press Enter. Skip the button and Enter sends your prompt as it is.
+- Settings (in `/config`): most questions to ask (3), add the working rules (on), model (haiku).
 
 **[`sess-handoff`](mods/sess-handoff)** writes a handoff of the whole chat so you can continue in a fresh chat or pass the work to a teammate.
 - Use it: type `sess-handoff`. It also offers itself at 250k tokens, or when you return after a pause and the prompt cache has gone cold. It waits for subagents to finish, and never opens a fresh chat until you confirm.

@@ -1,8 +1,9 @@
+import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-// Prompt Shaper: a long, messy prompt is caught before Claude reads it.
-// prompt.submit: a prompt of enough words, typed at the prompt box, is held back
-// (dropped, with a short notice) and shaped in the background:
+// Prompt Shaper: a "Shape prompt" button above the prompt box. Nothing is shaped unless
+// the person presses it, so a prompt that should go as it is just gets Enter.
+// Press the button with a prompt typed in the box and it is shaped in the background:
 //   1. the model finds the gaps whose answer would change what gets done and asks
 //      them (at most maxQuestions, each with a default) in the usual question
 //      dialog; the person picks an option or types their own;
@@ -11,17 +12,15 @@ import type { EngineInterface, Register } from 'claude-code'
 //   3. working rules are added to the end (restate and say what a bare "go" does
 //      before starting, end with "Not done", stop at a draft for anything outward
 //      facing), unless the setting is off;
-//   4. the brief is put in the prompt box, so the person confirms it, edits it if
-//      they like, and presses Enter. The brief is not shaped again.
-// The person's own words are never lost: on a cancel or a failure they go back into
-// the box (or, with no box to hold them, onto the clipboard).
-// A prompt starting with ">> " is sent as typed, minus that prefix.
+//   4. the brief replaces the text in the prompt box, so the person confirms it,
+//      edits it if they like, and presses Enter.
+// The person's own words stay in the box until the brief is ready, so a cancel or a
+// failure leaves them untouched.
 
 const DEFAULT_QUESTIONS = 3
 const MAX_QUESTIONS_CAP = 5
 const MAX_CHARS = 20_000
 const CALL_MS = 45_000
-const BYPASS = '>> '
 const DEFAULT_TAG = ' (default)'
 // The shape of a finished brief: it passes through without being shaped again.
 const SHAPED = /^## The job\b[\s\S]*^## Done means\b/m
@@ -78,12 +77,8 @@ If there is nothing for another section, write "None given." Write in the langua
 
 type Question = { question: string; options: string[]; default: string }
 
-// Module variables start over on a reload.
-let busy = false
-// A prompt the person chose to send as typed: the next identical submission passes.
-let sendAsTyped = ''
-
-const wordsIn = (text: string) => text.trim().split(/\s+/).filter(Boolean).length
+// True while a prompt is being shaped: the band shows that instead of the button.
+const working = atom({ plugin: 'prompt-shaper', key: 'working' } as const, false)
 
 async function complete($: EngineInterface, model: string, system: string, prompt: string, maxTokens: number) {
   const reply = await $.model.complete({ model, system, prompt, maxTokens, effort: 'low', timeoutMs: CALL_MS })
@@ -119,38 +114,16 @@ function parseGaps(text: string, max: number): { clear: boolean; questions: Ques
   }
 }
 
-// Gives the person their own words back: in the box, else on the clipboard.
-async function restore($: EngineInterface, original: string, message: string) {
-  const box = await $.prompt.fill({ text: original })
-  if (box.isFilled) {
-    $.ui.toast(message)
-    return
-  }
-  const copy = await $.ui.copy({ text: original })
-  $.ui.toast(copy.isCopied ? 'Your prompt is on the clipboard. Paste it to continue.' : 'Could not return your prompt. Retype it.')
-}
-
-// The brief goes in the box to be confirmed. Where there is no box (or a dialog
-// holds it), a dialog shows the brief and asks.
-async function place($: EngineInterface, original: string, brief: string) {
+// The brief goes in the box to be confirmed. Where a dialog holds the box, it goes on
+// the clipboard instead.
+async function place($: EngineInterface, brief: string) {
   const box = await $.prompt.fill({ text: brief })
   if (box.isFilled) {
     $.ui.toast('Check the brief, edit what you like, then press Enter to send.', { timeoutMs: 8000 })
     return
   }
-  let pick = 'Cancel'
-  try {
-    pick = await $.ui.ask(`Send this brief?\n\n${brief}`, { options: ['Send the brief', 'Send my original', 'Cancel'], header: 'Confirm' })
-  } catch {
-    pick = 'Cancel'
-  }
-  if (pick === 'Send the brief') {
-    await $.prompt.submit({ text: brief, asUser: true })
-  } else if (pick === 'Send my original') {
-    await $.prompt.submit({ text: original, asUser: true })
-  } else {
-    await restore($, original, 'Cancelled. Your prompt is back in the box.')
-  }
+  const copy = await $.ui.copy({ text: brief })
+  $.ui.toast(copy.isCopied ? 'The brief is on the clipboard. Paste it into the prompt box.' : 'Could not place the brief. Try again.')
 }
 
 // One question with its default marked and first. The answer comes back without
@@ -168,8 +141,7 @@ async function shape($: EngineInterface, original: string, model: string, max: n
     if (max > 0) {
       const gaps = parseGaps(await complete($, model, gapsSystem(max), `<request>\n${original}\n</request>`, 1200), max)
       if (gaps.clear) {
-        sendAsTyped = original.trim()
-        await restore($, original, 'Your prompt is already clear. Press Enter to send it as it is.')
+        $.ui.toast('Your prompt is already clear. Press Enter to send it as it is.')
         return
       }
       questions = gaps.questions
@@ -180,8 +152,8 @@ async function shape($: EngineInterface, original: string, model: string, max: n
       try {
         answer = await ask($, q, i + 1, questions.length)
       } catch {
-        // Dismissed: the person changed their mind.
-        await restore($, original, 'Cancelled. Your prompt is back in the box.')
+        // Dismissed: the person changed their mind. Their words are still in the box.
+        $.ui.toast('Cancelled. Your prompt is untouched.')
         return
       }
       answered.push(`Q: ${q.question}\nA: ${answer}`)
@@ -189,46 +161,74 @@ async function shape($: EngineInterface, original: string, model: string, max: n
     $.ui.status('Writing the brief…')
     const message = `<request>\n${original}\n</request>\n<answers>\n${answered.length > 0 ? answered.join('\n\n') : 'None.'}\n</answers>`
     const brief = await complete($, model, SHAPE_SYSTEM, message, 2500)
-    if (!SHAPED.test(brief)) throw new Error('the reply was not in four parts')
-    await place($, original, rules ? `${brief}\n\n${WORKING_RULES}` : brief)
+    if (!SHAPED.test(brief)) throw new Error('the reply was not in the five parts')
+    await place($, rules ? `${brief}\n\n${WORKING_RULES}` : brief)
   } catch (err) {
     const why = err instanceof Error ? err.message : String(err)
     $.ui.log(`prompt-shaper: ${why}`, { to: 'debug' })
-    await restore($, original, `Could not shape it (${why}). Your prompt is back in the box.`)
+    $.ui.toast(`Could not shape it (${why}). Your prompt is untouched.`)
   }
 }
 
+// The button: reads what is in the box now, so it works on any prompt, long or short.
+async function press($: EngineInterface, model: string, max: number, rules: boolean) {
+  if (await read($, working)) return
+  const original = (await $.prompt.read()).text
+  if (!original.trim()) {
+    $.ui.toast('Type your prompt first, then press Shape prompt.')
+  } else if (SHAPED.test(original)) {
+    $.ui.toast('That is already a brief. Press Enter to send it.')
+  } else if (original.length > MAX_CHARS) {
+    $.ui.toast('That prompt is too long to shape. Send it as it is.')
+  } else {
+    await update($, working, () => true)
+    try {
+      await shape($, original, model, max, rules)
+    } finally {
+      await update($, working, () => false)
+      $.ui.status(undefined)
+    }
+  }
+}
+
+// Whether another mod's tree came back from `next` (a Box with nothing in it is nothing drawn).
+const drawn = (tree: unknown) => {
+  const t = tree as { type?: string; children?: unknown[] } | null | undefined
+  return !!t && (t.type !== 'Box' || (t.children?.length ?? 0) > 0)
+}
+
 export const register: Register = (on, options) => {
-  const minWords = Math.max(1, Number(options.minWords) || 60)
   const model = typeof options.model === 'string' && options.model ? options.model : 'haiku'
   const asked = Number(options.maxQuestions)
   const maxQuestions = Number.isFinite(asked) ? Math.min(MAX_QUESTIONS_CAP, Math.max(0, Math.round(asked))) : DEFAULT_QUESTIONS
   const rules = options.workingRules !== false
 
-  on('prompt.submit', async ($, e, next) => {
-    // Only what the person typed at the prompt box (the engine stamps every other
-    // source), as a plain prompt with no images, sent while Claude is idle.
-    const from = e.origin?.kind
-    if ((from && from !== 'composer') || e.command || e.isMeta || e.turnId || e.attachments?.length) {
-      return next(e)
-    }
-    if (e.text.startsWith(BYPASS)) {
-      return next({ ...e, text: e.text.slice(BYPASS.length) })
-    }
-    if (sendAsTyped && e.text.trim() === sendAsTyped) {
-      sendAsTyped = ''
-      return next(e)
-    }
-    if (busy || SHAPED.test(e.text) || e.text.length > MAX_CHARS || wordsIn(e.text) < minWords) {
-      return next(e)
-    }
-    busy = true
-    void shape($, e.text, model, maxQuestions, rules)
-      .catch(() => undefined)
-      .finally(() => {
-        busy = false
-        $.ui.status(undefined)
-      })
-    return { drop: 'Shaping your prompt. It comes back in the box in a moment.' }
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    // Another mod may draw this band too (vitals does): keep its tree and stack ours under it.
+    const below = await next(e)
+    if (e.props.hasSurvey) return below
+
+    const { Box, Button, Text } = $.ui.resolve(e)
+    const isWorking = await read($, working)
+    // A mod cannot draw inside the prompt box; the nearest seat is the band above it,
+    // with the button pushed to the right edge.
+    const row = (
+      <Box key="prompt-shaper" flexDirection="row" paddingX={1} alignItems="center">
+        <Box key="grow" flexGrow={1} />
+        {isWorking ? (
+          <Text dimColor>Shaping your prompt…</Text>
+        ) : (
+          <Button key="shape" label="Shape prompt" hotkey="s" onPress={() => void press($, model, maxQuestions, rules)} />
+        )}
+      </Box>
+    )
+    return drawn(below) ? (
+      <Box flexDirection="column">
+        {below}
+        {row}
+      </Box>
+    ) : (
+      row
+    )
   })
 }

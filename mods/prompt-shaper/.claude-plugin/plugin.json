@@ -1,15 +1,12 @@
 {
   "name": "prompt-shaper",
-  "version": "0.2.0",
-  "description": "Catches a long, messy prompt before Claude reads it, asks only the questions that change the outcome (each with a default), then fills the prompt box with a clear brief: the job, the why, the guardrails, what done means and the assumptions.",
-  "author": { "name": "Alta Falconeri" },
+  "version": "0.3.0",
+  "description": "A \"Shape prompt\" button above the prompt box. Press it when you want the prompt you typed turned into a clear brief: it asks only the questions that change the outcome (each with a default), then fills the box with the job, the why, the guardrails, what done means and the assumptions. Never automatic: without a press, Enter sends your prompt as it is.",
+  "author": {
+    "name": "Alta Falconeri"
+  },
+  "types": "./types/index.d.ts",
   "userConfig": {
-    "minWords": {
-      "type": "number",
-      "title": "Shortest prompt to shape",
-      "description": "Prompts with fewer words than this are sent as typed.",
-      "default": 60
-    },
     "maxQuestions": {
       "type": "number",
       "title": "Most questions to ask",
@@ -27,7 +24,11 @@
       "title": "Model that writes the questions and the brief",
       "description": "Haiku is fastest and cheapest; Sonnet or Opus write sharper briefs.",
       "default": "haiku",
-      "options": ["haiku", "sonnet", "opus"]
+      "options": [
+        "haiku",
+        "sonnet",
+        "opus"
+      ]
     }
   }
 }

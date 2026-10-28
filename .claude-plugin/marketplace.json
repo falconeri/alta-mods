@@ -11,7 +11,7 @@
     {
       "name": "prompt-shaper",
       "source": "./mods/prompt-shaper",
-      "description": "Catches a long, messy prompt, asks only the questions that change the outcome (each with a default), then fills the prompt box with a clear brief: the job, the why, the guardrails, what done means and the assumptions, plus working rules for Claude."
+      "description": "A Shape prompt button above the prompt box. Press it to turn what you typed into a clear brief: it asks only the questions that change the outcome (each with a default), then fills the prompt box with the job, the why, the guardrails, what done means and the assumptions, plus working rules for Claude. Never automatic."
     },
     {
       "name": "vitals",
