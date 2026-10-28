@@ -16,7 +16,7 @@
     {
       "name": "vitals",
       "source": "./mods/vitals",
-      "description": "A band above your prompt, slim or detailed: usage left in the 5-hour and 7-day windows with reset times and a pace warning before you run out, how full the context is, and whether the prompt cache is warm or cold. Works in the terminal and desktop app, light or dark."
+      "description": "A band above your prompt, slim or detailed: usage left in the 5-hour and 7-day windows with reset times and a pace warning before you run out, how full the context is, and whether the prompt cache is warm or cold. Git branch and plain text in the terminal, ribbon-style art on desktop, light or dark."
     },
     {
       "name": "sess-handoff",

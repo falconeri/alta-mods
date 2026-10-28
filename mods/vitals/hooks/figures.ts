@@ -48,7 +48,6 @@ export const paceOf = (kind: string, percentUsed: number, resetsAt: string | und
 }
 
 export const tok = (n: number): string => (n >= 1e6 ? `${Number((n / 1e6).toFixed(1))}M` : `${Math.round(n / 1000)}k`)
-export const usd = (n: number): string => '$' + n.toFixed(2)
 
 export type CacheView = { mode: 'warm' | 'cold'; idleMs: number; leftMs: number }
 
@@ -60,14 +59,26 @@ export const cacheView = (lastAt: number | undefined, now: number, ttlMs: number
 }
 
 /**
- * Estimated cost of the next message's context. A cold cache re-writes it (1.25x
- * input for the 5-minute cache, 2x for the 1-hour one); a warm one reads it (0.1x).
- * Null when no price was given.
+ * How many times a warm read a cold re-cache of the same context costs. A cache write
+ * is 2x the input price for the 1-hour cache and 1.25x for the 5-minute one, a read
+ * 0.1x, so 20x or 12.5x. It is a ratio of list prices, so it needs no price from the
+ * person and holds on any model: an indicator of how much more of your usage a cold
+ * message uses, not an exact count.
  */
-export const nextCost = (mode: 'warm' | 'cold', tokens: number, pricePerM: number, ttlMin: number): number | null => {
-  if (!(pricePerM > 0) || tokens <= 0) return null
-  const factor = mode === 'warm' ? 0.1 : ttlMin > 5 ? 2 : 1.25
-  return (tokens / 1e6) * pricePerM * factor
+export const coldMultiple = (ttlMin: number): number => (ttlMin > 5 ? 2 : 1.25) / 0.1
+
+/** A multiple written short: 20×, 12.5×. */
+export const fmtTimes = (n: number): string => `${Number(n.toFixed(1))}×`
+
+/**
+ * The branch named by the text of a .git/HEAD file: `ref: refs/heads/main` gives
+ * main, and a detached HEAD gives its short commit. Null for anything else.
+ */
+export const branchOf = (head: string): string | null => {
+  const text = head.trim()
+  const ref = /^ref:\s*refs\/heads\/(.+)$/.exec(text)
+  if (ref) return ref[1] ?? null
+  return /^[0-9a-f]{40,64}$/i.test(text) ? text.slice(0, 7) : null
 }
 
 /** A configured number, or the default when it is missing, not a number or negative. */

@@ -1,6 +1,6 @@
 import { expect, mock, test } from 'claude-code/testing'
 
-import { cacheView, dots, fmtSpan, nextCost, paceOf } from './figures'
+import { branchOf, cacheView, coldMultiple, dots, fmtSpan, paceOf } from './figures'
 
 const MIN = 60_000
 const HOUR = 60 * MIN
@@ -84,14 +84,19 @@ test('pace: warns when the burn would empty a window before it resets', () => {
   expect(paceOf('spend_limit', 50, resets(HOUR), NOW)).toBeNull()
 })
 
-test('cache: warm for the configured minutes, then cold; cost needs a price', () => {
+test('cache: warm for the configured minutes, then cold; a cold re-cache is a multiple of a warm read', () => {
   expect(cacheView(NOW - 10 * MIN, NOW, 60 * MIN)).toEqual({ mode: 'warm', idleMs: 10 * MIN, leftMs: 50 * MIN })
   expect(cacheView(NOW - 61 * MIN, NOW, 60 * MIN)?.mode).toBe('cold')
   expect(cacheView(undefined, NOW, 60 * MIN)).toBeNull()
-  expect(nextCost('cold', 1_000_000, 0, 60)).toBeNull()
-  expect(nextCost('cold', 1_000_000, 4, 60)).toBe(8)
-  expect(nextCost('cold', 1_000_000, 4, 5)).toBe(5)
-  expect(nextCost('warm', 1_000_000, 4, 60)).toBe(0.4)
+  expect(coldMultiple(60)).toBe(20)
+  expect(coldMultiple(5)).toBe(12.5)
+})
+
+test('the branch is read from .git/HEAD: a branch, a detached commit, or nothing', () => {
+  expect(branchOf('ref: refs/heads/main\n')).toBe('main')
+  expect(branchOf('ref: refs/heads/feature/vitals-band')).toBe('feature/vitals-band')
+  expect(branchOf('3174ed2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n')).toBe('3174ed2')
+  expect(branchOf('garbage')).toBeNull()
 })
 
 test('formatting', () => {
@@ -112,4 +117,72 @@ test('the button is on the band at every width, never pushed off the edge', asyn
     expect(await ui.findAll({ type: 'Button' }), `${bodyColumns} columns: exactly one button`).toHaveLength(1)
     await ui.unmount()
   }
+})
+
+const gitRepo = (on: never) => {
+  const run = on as (...args: unknown[]) => void
+  run('session.cwd', () => ({ value: '/work/app' }))
+  run('fs.read', (_: unknown, e: { path: string }) => {
+    // the harness resolves paths for the host: D:\work\app\.git\HEAD on Windows
+    const path = e.path.replace(/\\/g, '/').replace(/^[A-Za-z]:/, '')
+    if (path === '/work/app/.git/HEAD') return { value: 'ref: refs/heads/feature/bands\n' }
+    throw new Error('no such file')
+  })
+}
+
+test('the terminal shows the git branch in place of a title; the desktop shows neither', async ($, on) => {
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.usage', () => ({ value: usage(22, 48) }))
+  gitRepo(on as never)
+  mock.clock(on, { now: NOW })
+  await $.session.start({ cwd: '/work/app', surface: 'terminal', isInteractive: true })
+
+  const terminal = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await terminal.find({ type: 'Text', text: /feature\/bands/ }), 'terminal: the branch').toBeDefined()
+  expect(await terminal.find({ type: 'Text', text: /VITALS/ }), 'terminal: no title').toBeUndefined()
+  await terminal.unmount()
+
+  const desktop = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  expect(await desktop.find({ type: 'Text', text: /feature\/bands/ }), 'desktop: no branch').toBeUndefined()
+  expect(await desktop.find({ type: 'Text', text: /VITALS/ }), 'desktop: no title').toBeUndefined()
+  await desktop.unmount()
+})
+
+test('a folder with no repository shows no branch', async ($, on) => {
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.usage', () => ({ value: usage(22, 48) }))
+  on('session.cwd', () => ({ value: '/tmp/nowhere' }))
+  on('fs.read', () => {
+    throw new Error('no such file')
+  })
+  mock.clock(on, { now: NOW })
+  await $.session.start({ cwd: '/tmp/nowhere', surface: 'terminal', isInteractive: true })
+
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /78% left/ })).toBeDefined()
+  await ui.unmount()
+})
+
+test('desktop draws Robo and the cache card in the detail look; the terminal draws text rows', async ($, on) => {
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.usage', () => ({ value: usage(22, 48) }))
+  on('classic.SessionStart', () => ({}))
+  mock.clock(on, { now: NOW })
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+  // A resumed chat that was away ten minutes, holding 240k tokens: the cache is warm.
+  await $.classic.SessionStart({ source: 'resume', seconds_since_last_response: 600, context_tokens: 240_000 } as never)
+
+  const desktop = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  expect(await desktop.findAll({ type: 'Svg' }), 'desktop slim: Robo and the chip are drawings').toHaveLength(2)
+  await desktop.press({ key: 'look-toggle' })
+  expect(await desktop.find({ type: 'Text', text: /\(22% used\)/ }), 'desktop detail keeps the usage rows').toBeDefined()
+  expect(await desktop.findAll({ type: 'Svg' }), 'and swaps them for the cache card').toHaveLength(1)
+  await desktop.unmount()
+
+  const terminal = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await terminal.find({ type: 'Svg' }), 'terminal: no drawings').toBeUndefined()
+  // The look is the session's, so the terminal band is already in the detail look the desktop opened.
+  expect(await terminal.find({ type: 'Text', text: /warm/ }), 'terminal: the cache in words').toBeDefined()
+  expect(await terminal.find({ type: 'Text', text: /about 20×/ }), 'terminal detail: a cold cache as a multiple').toBeDefined()
+  await terminal.unmount()
 })

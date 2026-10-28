@@ -12,6 +12,6 @@ export type Look = 'slim' | 'detail'
 
 declare module 'claude-code' {
   interface PluginState {
-    'vitals': { windows: Window[]; cache: CacheFacts | null; context: ContextFacts | null; look: Look | null }
+    'vitals': { windows: Window[]; cache: CacheFacts | null; context: ContextFacts | null; look: Look | null; branch: string | null }
   }
 }
