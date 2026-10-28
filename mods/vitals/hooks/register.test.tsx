@@ -2,6 +2,13 @@ import { expect, mock, test } from 'claude-code/testing'
 
 import { branchOf, cacheView, coldMultiple, dots, fmtSpan, paceOf } from './figures'
 
+// The engine draws nothing of its own in the band: a stand-in beneath the mod, an empty Box.
+const engine = (on: (...args: any[]) => void) =>
+  on('ui.render', ($: any, e: unknown) => {
+    const { Box } = $.ui.resolve(e)
+    return <Box />
+  })
+
 const MIN = 60_000
 const HOUR = 60 * MIN
 const NOW = Date.parse('2026-10-28T12:00:00Z')
@@ -29,6 +36,7 @@ const usage = (fiveUsed: number, sevenUsed: number) => ({
 })
 
 test('slim is one row; the button opens the detail look; both on terminal and desktop', async ($, on) => {
+  engine(on)
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.usage', () => ({ value: usage(22, 48) }))
   mock.clock(on, { now: NOW })
@@ -107,6 +115,7 @@ test('formatting', () => {
 })
 
 test('the button is on the band at every width, never pushed off the edge', async ($, on) => {
+  engine(on)
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.usage', () => ({ value: usage(60, 80) }))
   mock.clock(on, { now: NOW })
@@ -131,6 +140,7 @@ const gitRepo = (on: never) => {
 }
 
 test('the terminal shows the git branch and no title; the desktop shows neither', async ($, on) => {
+  engine(on)
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.usage', () => ({ value: usage(22, 48) }))
   gitRepo(on as never)
@@ -150,6 +160,7 @@ test('the terminal shows the git branch and no title; the desktop shows neither'
 })
 
 test('a folder with no repository shows no branch', async ($, on) => {
+  engine(on)
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.usage', () => ({ value: usage(22, 48) }))
   on('session.cwd', () => ({ value: '/tmp/nowhere' }))
@@ -166,6 +177,7 @@ test('a folder with no repository shows no branch', async ($, on) => {
 })
 
 test('desktop draws Robo and the cache card in the detail look; the terminal draws text rows', async ($, on) => {
+  engine(on)
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.usage', () => ({ value: usage(22, 48) }))
   on('classic.SessionStart', () => ({}))
@@ -190,6 +202,7 @@ test('desktop draws Robo and the cache card in the detail look; the terminal dra
 })
 
 test('before the first reply the band says what it is waiting for, on both skins', async ($, on) => {
+  engine(on)
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   // A fresh session: no rate-limit reading yet, no context size, no request sent.
   on('session.usage', () => ({ value: { startedAt: 0, context: { window: 1_000_000 }, rateLimits: [] } }))
@@ -204,6 +217,7 @@ test('before the first reply the band says what it is waiting for, on both skins
 })
 
 test('the desktop drawings are inked for the app theme, light or dark', async ($, on) => {
+  engine(on)
   let theme = 'light'
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.usage', () => ({ value: usage(22, 48) }))
@@ -221,3 +235,19 @@ test('the desktop drawings are inked for the app theme, light or dark', async ($
   await light.unmount()
 })
 
+
+test('another mod band under this one is kept, not replaced', async ($, on) => {
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.usage', () => ({ value: usage(22, 48) }))
+  on('ui.render', ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>shape button</Text>
+  })
+  mock.clock(on, { now: NOW })
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /78% left/ }), 'vitals still draws').toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /shape button/ }), 'the other band is kept').toBeDefined()
+  await ui.unmount()
+})

@@ -134,6 +134,12 @@ const paceWords = (pace: Pace | null, long: boolean): { text: string; tone?: Ton
   return { text: 'on pace' }
 }
 
+// Whether another mod's tree came back from `next` (a Box with nothing in it is nothing drawn).
+const hasDrawing = (tree: unknown) => {
+  const t = tree as { type?: string; children?: unknown[] } | null | undefined
+  return !!t && (t.type !== 'Box' || (t.children?.length ?? 0) > 0)
+}
+
 export const register: Register = (on, options) => {
   const ttlMin = asked(options.cacheMinutes, DEFAULT_CACHE_MINUTES) || DEFAULT_CACHE_MINUTES
   const ttlMs = ttlMin * 60_000
@@ -203,9 +209,12 @@ export const register: Register = (on, options) => {
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     if (e.props.hasSurvey) return next(e)
+    // Another mod may draw this band too (prompt-shaper's button): keep its tree under ours.
+    const below = await next(e)
 
     const ui = $.ui.resolve(e)
     const { Box, Button, Text } = ui
+    const withBelow = <T,>(tree: T) => (hasDrawing(below) ? <Box flexDirection="column">{tree}{below}</Box> : tree)
     // Svg draws on desktop, mobile and VS Code; the terminal gets the text skin.
     // Ask the surface, not the table: the terminal's table still lists Svg.
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
@@ -262,7 +271,7 @@ export const register: Register = (on, options) => {
     // Before the first reply the engine has no usage figures and there is no cache to track:
     // say so, rather than leave the band empty and look as if it were missing.
     if (list.length === 0 && !view && !ctx) {
-      return (
+      return withBelow(
         <Box flexDirection="row" paddingX={1} alignItems="center" {...frame}>
           {branchNode('branch', 3)}
           <Text {...dim}>usage, context and cache appear after your first reply</Text>
@@ -311,7 +320,7 @@ export const register: Register = (on, options) => {
         const d = dots(left, cells)
         const reset = w.resetsAt ? Date.parse(w.resetsAt) : NaN
         const pace = paceWords(paceOf(w.kind, w.percentUsed, w.resetsAt, now), !isTight)
-        return (
+        return withBelow(
           <Box key={w.kind} flexDirection="row">
             {tag(NAMES[w.kind] ?? w.kind.toUpperCase())}
             <Text color={tone}>{d.on}</Text>
@@ -378,7 +387,7 @@ export const register: Register = (on, options) => {
         )
       }
 
-      return (
+      return withBelow(
         <Box flexDirection="column" {...frame}>
           <Box flexDirection="row" paddingX={1}>
             {branchNode('branch', 2)}
@@ -412,7 +421,7 @@ export const register: Register = (on, options) => {
         (NAMES[w.kind] ?? w.kind).length + 1 + cells + ` ${left}% left`.length + (left < lowAt ? 4 : 0) +
           (Number.isNaN(reset) ? 0 : 3 + (reset <= 0 ? 9 : fmtSpan(reset).length)) + (note ? 3 + note.text.length : 0) + 3,
       )
-      return (
+      return withBelow(
         <Box key={w.kind} flexDirection="row" flexShrink={0} marginRight={3}>
           <Text {...dim} bold>{NAMES[w.kind] ?? w.kind.toUpperCase()} </Text>
           <Text color={tone}>{d.on}</Text>
@@ -456,7 +465,7 @@ export const register: Register = (on, options) => {
     const label = branchNode('branch', 3)
 
     if (fitsOneRow) {
-      return (
+      return withBelow(
         <Box flexDirection="row" paddingX={1} alignItems="center" {...frame}>
           {label}
           {usage}
@@ -470,7 +479,7 @@ export const register: Register = (on, options) => {
     // Narrower: usage on top (one per row when they don't fit side by side), then the
     // button first, so it is never the thing pushed off the edge, with context and cache.
     const stackUsage = isTight || labelWidth + usageWidth + 3 > columns
-    return (
+    return withBelow(
       <Box flexDirection="column" paddingX={1} {...frame}>
         <Box flexDirection={stackUsage ? 'column' : 'row'}>
           {stackUsage ? branchNode('branch', 0) : label}
