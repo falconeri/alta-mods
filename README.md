@@ -8,6 +8,23 @@ My personal [Claude Code](https://claude.com/claude-code) mods, shared as one pl
 | --- | --- |
 | [`switch-mods`](mods/switch-mods) | Type `/amods` to open a panel that switches every installed plugin and mod on or off. Works in the terminal and the desktop app. |
 | [`prompt-shaper`](mods/prompt-shaper) | Catches a long, messy prompt, asks only the questions that change the outcome (each with a default), then fills the prompt box with a clear brief: the job, the why, the guardrails, what done means and the assumptions, plus working rules for Claude. |
+| [`sess-handoff`](mods/sess-handoff) | Writes a detailed handoff prompt of the whole chat at 250k tokens, when the prompt cache goes cold, or when you type `sess-handoff`. Waits for subagents to finish, asks before opening a fresh chat seeded with it, and can copy it for a teammate. |
+
+### What each mod does
+
+None of the mods needs an account, key or setup beyond installing it: the defaults work. Each folder has its own README with the full details.
+
+**[`switch-mods`](mods/switch-mods)** adds a panel for turning installed plugins on and off.
+- Use it: type `/amods`, press **On** / **Off** on a row, then **Apply**.
+- Settings: none.
+
+**[`prompt-shaper`](mods/prompt-shaper)** turns a long, messy prompt into a clear brief before Claude reads it.
+- Use it: just send a prompt of 60 words or more. Answer the few questions it asks (each has a default), then check the brief it puts in the prompt box and press Enter. Start a prompt with `>> ` to skip it.
+- Settings (in `/config`): shortest prompt to shape (60 words), most questions to ask (3), add the working rules (on), model (haiku).
+
+**[`sess-handoff`](mods/sess-handoff)** writes a handoff of the whole chat so you can continue in a fresh chat or pass the work to a teammate.
+- Use it: type `sess-handoff`. It also offers itself at 250k tokens, or when you return after a pause and the prompt cache has gone cold. It waits for subagents to finish, and never opens a fresh chat until you confirm.
+- Settings (in `/config`): token trigger (250000), minutes until the cache counts as cold (5), smallest chat to offer on a cold cache (50000), folder for saved handoffs (`~/.claude/handoffs`).
 
 ## Requirements
 
@@ -28,7 +45,7 @@ Install a mod from it (repeat for each mod you want), for example the mods panel
 claude plugin install switch-mods@alta-mods
 ```
 
-Then restart Claude Code (or run `/reload-plugins`) and type `/amods`.
+Then restart Claude Code (or run `/reload-plugins`) and type `/amods`. Other mods install the same way, for example `claude plugin install prompt-shaper@alta-mods` or `claude plugin install sess-handoff@alta-mods`.
 
 Prefer to stay inside a Claude Code session? The same thing, typed at the prompt:
 

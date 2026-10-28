@@ -31,6 +31,53 @@ Unless you turn them off, every brief ends with these rules for Claude:
 
 So after you press Enter, Claude replies with its restatement and assumptions, and you answer "go" or correct it.
 
+## Example
+
+You type (shortened here; it is triggered at 60 words or more):
+
+```text
+ok so we need the signup page to look better, people say it feels old, also maybe
+the form is too long?? marketing wants it done before the launch, dont break the
+existing validation, I think the logo should stay, and it must work on phones...
+```
+
+You are asked, one at a time, only what would change the outcome, each with a default:
+
+```text
+Q 1 of 2   Who is the page for?
+           > New customers (default)   Returning users   Admins
+```
+
+Then the prompt box fills with the brief. You can edit it before pressing Enter:
+
+```text
+## The job
+Redesign the signup page so it feels modern and the form is shorter.
+
+## The why
+Customers say the page feels old; marketing needs it before launch.
+
+## The guardrails
+- Keep the existing validation and the logo.
+
+## Done means
+- The page works on phones.
+
+## Assumptions
+- New customers are the audience (default).
+
+## How to work
+- Before you change anything, restate the job ...
+```
+
+## Setup
+
+1. Install it (see [Install](#install)) and restart Claude Code, or run `/reload-plugins`.
+2. That is all. The defaults work; there is nothing you have to fill in.
+3. To change a setting, open `/config` and find the rows starting with the mod's name (see [Settings](#settings)). Changing one reloads the mod.
+
+Nothing needs an API key or account beyond your normal Claude Code login. The questions and the brief are written with your own plan, using the model set in **Model**.
+
 ## Skip it
 
 - Start the prompt with `>> ` (two arrows and a space) to send it as typed. The prefix is removed.
@@ -53,6 +100,13 @@ Open `/config` and look for the prompt-shaper rows:
 - Each shaped prompt makes two short model calls (the questions, then the brief) on your own plan. With the question limit at 0 it makes one. Prompts over 20,000 characters are not shaped.
 - Where a surface has no prompt box to fill, the brief is shown in a dialog instead, with **Send the brief**, **Send my original** and **Cancel**.
 - With **Cancel** and no prompt box, your original is copied to the clipboard.
+
+## Troubleshooting
+
+- **Nothing happens when I send a long prompt**: it is probably under the word limit, starts with `>> `, is a slash command, or has an image. Lower **Shortest prompt to shape** in `/config`, or check that the mod is on in `/amods` or `claude plugin list`.
+- **My prompt disappeared**: it comes back in the box after a cancel or a failure. With no prompt box (some surfaces) it is copied to the clipboard instead.
+- **The questions are not useful**: set **Most questions to ask** to `0` to skip them, or to a lower number. Switch **Model** to `sonnet` or `opus` for sharper questions.
+- **I do not want the "How to work" block**: turn off **Add the working rules**.
 
 ## Install
 

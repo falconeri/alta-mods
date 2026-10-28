@@ -1,0 +1,32 @@
+{
+  "name": "sess-handoff",
+  "version": "0.1.0",
+  "description": "Writes a detailed handoff prompt of the whole chat at 250k tokens, when the prompt cache goes cold, or when you type sess-handoff. Waits for subagents to finish, asks before opening a fresh chat seeded with it, and can copy it for a teammate.",
+  "author": { "name": "Alta Falconeri" },
+  "userConfig": {
+    "tokenThreshold": {
+      "type": "number",
+      "title": "Hand off at this many context tokens",
+      "description": "When the conversation reaches this size, a handoff is written. 0 turns this trigger off.",
+      "default": 250000
+    },
+    "coldMinutes": {
+      "type": "number",
+      "title": "Cache counts as cold after (minutes)",
+      "description": "Minutes since Claude's last reply after which the prompt cache is treated as cold. Claude's cache lasts 5 minutes, or 1 hour on some plans. 0 turns this trigger off.",
+      "default": 5
+    },
+    "coldMinTokens": {
+      "type": "number",
+      "title": "Only offer on a cold cache above this size",
+      "description": "A cold cache on a small conversation costs little, so it is ignored below this many context tokens.",
+      "default": 50000
+    },
+    "folder": {
+      "type": "string",
+      "title": "Folder for saved handoffs",
+      "description": "Where each handoff is saved as a .md file. Empty means a handoffs folder inside your Claude config folder (~/.claude/handoffs).",
+      "default": ""
+    }
+  }
+}

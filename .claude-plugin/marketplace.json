@@ -12,6 +12,11 @@
       "name": "prompt-shaper",
       "source": "./mods/prompt-shaper",
       "description": "Catches a long, messy prompt, asks only the questions that change the outcome (each with a default), then fills the prompt box with a clear brief: the job, the why, the guardrails, what done means and the assumptions, plus working rules for Claude."
+    },
+    {
+      "name": "sess-handoff",
+      "source": "./mods/sess-handoff",
+      "description": "Writes a detailed handoff prompt of the whole chat at 250k tokens, when the prompt cache goes cold, or when you type sess-handoff. Waits for subagents to finish, asks before opening a fresh chat seeded with it, and can copy it for a teammate."
     }
   ]
 }
