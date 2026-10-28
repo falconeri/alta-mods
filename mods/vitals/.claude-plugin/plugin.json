@@ -1,6 +1,6 @@
 {
   "name": "vitals",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A slim band above your prompt: usage left in the 5-hour and 7-day windows with reset times and a pace check that warns before you run out, how full the context is, and whether the prompt cache is warm or cold.",
   "author": { "name": "Alta Falconeri" },
   "types": "./types/index.d.ts",

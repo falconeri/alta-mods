@@ -100,3 +100,16 @@ test('formatting', () => {
   expect(fmtSpan(57 * HOUR)).toBe('2d 9h')
   expect(dots(78, 10)).toEqual({ on: '●●●●●●●●', off: '··' })
 })
+
+test('the button is on the band at every width, never pushed off the edge', async ($, on) => {
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.usage', () => ({ value: usage(60, 80) }))
+  mock.clock(on, { now: NOW })
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+
+  for (const bodyColumns of [200, 120, 90, 70, 50, 40]) {
+    const ui = await $.ui.mount({ ...BAND, props: { ...BAND.props, bodyColumns }, surface: 'terminal' })
+    expect(await ui.findAll({ type: 'Button' }), `${bodyColumns} columns: exactly one button`).toHaveLength(1)
+    await ui.unmount()
+  }
+})

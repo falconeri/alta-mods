@@ -22,8 +22,6 @@ const DEFAULT_LOW_AT = 15
 const CELLS = 10
 const TIGHT_CELLS = 6
 const DETAIL_CELLS = 24
-/** At or above this many columns the slim look fits on one row. */
-const WIDE_AT = 100
 /** Under this each slim usage window gets its own row, and detail drops its extras. */
 const TIGHT_AT = 56
 /** How often the band redraws, so countdowns and the warm-to-cold flip stay current. */
@@ -238,6 +236,8 @@ export const register: Register = (on, options) => {
 
     // ---------- slim: one row where it fits ----------
     const cells = isTight ? TIGHT_CELLS : CELLS
+    // Terminal cells each segment takes, so the row is chosen by what it needs, not a guess.
+    const widths: number[] = []
     const usage = list.map(w => {
       const left = Math.max(0, Math.round((100 - w.percentUsed) * 10) / 10)
       const tone = toneOf(left, lowAt)
@@ -246,6 +246,10 @@ export const register: Register = (on, options) => {
       const pace = paceWords(paceOf(w.kind, w.percentUsed, w.resetsAt, now), false)
       // On pace is the unremarkable case: the slim look says nothing.
       const note = pace && pace.text !== 'on pace' ? pace : null
+      widths.push(
+        (NAMES[w.kind] ?? w.kind).length + 1 + cells + ` ${left}% left`.length + (left < lowAt ? 4 : 0) +
+          (Number.isNaN(reset) ? 0 : 3 + (reset <= 0 ? 9 : fmtSpan(reset).length)) + (note ? 3 + note.text.length : 0) + 3,
+      )
       return (
         <Box key={w.kind} flexDirection="row" flexShrink={0} marginRight={3}>
           <Text dimColor bold>{NAMES[w.kind] ?? w.kind.toUpperCase()} </Text>
@@ -278,7 +282,17 @@ export const register: Register = (on, options) => {
       </Box>
     ) : null
 
-    if (columns >= WIDE_AT) {
+    const usageWidth = widths.reduce((a, b) => a + b, 0)
+    const fillWidth = share === null || !ctx ? 0 : 4 + `${share}%`.length + 3 + tok(ctx.tokens).length + 3
+    const cacheWidth = !view
+      ? 0
+      : 6 + 4 + (cold ? 1 + fmtSpan(view.idleMs).length : 6 + fmtSpan(view.leftMs).length) +
+        (cost !== null ? 9 + usd(cost).length : cold && ctx ? 12 + tok(ctx.tokens).length : 0) + 2
+    const buttonWidth = 10
+    const labelWidth = 8
+    // paddingX takes 2; one cell spare keeps the last glyph off the edge.
+    const fitsOneRow = labelWidth + usageWidth + fillWidth + cacheWidth + buttonWidth + 3 <= columns
+    if (fitsOneRow) {
       return (
         <Box flexDirection="row" paddingX={1}>
           <Text bold>VITALS  </Text>
@@ -290,18 +304,21 @@ export const register: Register = (on, options) => {
         </Box>
       )
     }
-    // Narrower: usage on top (one per row when tight), context, cache and the button beneath.
+    // Narrower: usage on top (one per row when they don't fit side by side), then the
+    // button first, so it is never the thing pushed off the edge, with context and cache.
+    const stackUsage = isTight || labelWidth + usageWidth + 3 > columns
     return (
       <Box flexDirection="column" paddingX={1}>
-        <Box flexDirection={isTight ? 'column' : 'row'}>
-          {isTight ? null : <Text bold>VITALS  </Text>}
+        <Box flexDirection={stackUsage ? 'column' : 'row'}>
+          {stackUsage ? null : <Text bold>VITALS  </Text>}
           {usage}
         </Box>
         <Box flexDirection="row">
+          <Box key="look" flexShrink={0} marginRight={2}>
+            <Button key="look-toggle" label={isDetail ? 'Slim' : 'Details'} hotkey="d" onPress={toggle} />
+          </Box>
           {fill}
           {cacheBlock}
-          {grow}
-          {button}
         </Box>
       </Box>
     )
