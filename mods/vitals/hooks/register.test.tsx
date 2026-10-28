@@ -147,6 +147,28 @@ test('the band has the round dim border prompt-shaper has, in both looks on both
   }
 })
 
+test('another mod strip under the band is drawn once, in both looks and at every width', async ($, on) => {
+  on('ui.render', ($: any, e: unknown) => {
+    const { Box, Text } = $.ui.resolve(e)
+    return <Box><Text>OTHER-MOD-STRIP</Text></Box>
+  })
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.usage', () => ({ value: usage(22, 48) }))
+  mock.clock(on, { now: NOW })
+
+  for (const surface of ['terminal', 'desktop'] as const) {
+    await $.session.start({ cwd: '/', surface, isInteractive: true })
+    for (const bodyColumns of [120, 50]) {
+      const ui = await $.ui.mount({ ...BAND, surface, props: { ...BAND.props, bodyColumns } })
+      for (const look of ['slim', 'detail']) {
+        expect((await ui.findAll({ type: 'Text', text: /OTHER-MOD-STRIP/ })).length, `${surface} ${bodyColumns} ${look}`).toBe(1)
+        await ui.press({ key: 'look-toggle' })
+      }
+      await ui.unmount()
+    }
+  }
+})
+
 const gitRepo = (on: never) => {
   const run = on as (...args: unknown[]) => void
   run('session.cwd', () => ({ value: '/work/app' }))

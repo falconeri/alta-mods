@@ -322,7 +322,7 @@ export const register: Register = (on, options) => {
         const d = dots(left, cells)
         const reset = w.resetsAt ? Date.parse(w.resetsAt) : NaN
         const pace = paceWords(paceOf(w.kind, w.percentUsed, w.resetsAt, now), !isTight)
-        return withBelow(
+        return (
           <Box key={w.kind} flexDirection="row">
             {tag(NAMES[w.kind] ?? w.kind.toUpperCase())}
             <Text color={tone}>{d.on}</Text>
@@ -423,7 +423,7 @@ export const register: Register = (on, options) => {
         (NAMES[w.kind] ?? w.kind).length + 1 + cells + ` ${left}% left`.length + (left < lowAt ? 4 : 0) +
           (Number.isNaN(reset) ? 0 : 3 + (reset <= 0 ? 9 : fmtSpan(reset).length)) + (note ? 3 + note.text.length : 0) + 3,
       )
-      return withBelow(
+      return (
         <Box key={w.kind} flexDirection="row" flexShrink={0} marginRight={3}>
           <Text {...dim} bold>{NAMES[w.kind] ?? w.kind.toUpperCase()} </Text>
           <Text color={tone}>{d.on}</Text>
