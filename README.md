@@ -6,7 +6,7 @@ My personal [Claude Code](https://claude.com/claude-code) mods, shared as one pl
 
 | Mod | What it does |
 | --- | --- |
-| _None yet._ | Mods will be listed here as they are added. |
+| [`switch-mods`](mods/switch-mods) | Type `/amods` to open a panel that switches every installed plugin and mod on or off. Works in the terminal and the desktop app. |
 
 ## Requirements
 
@@ -21,11 +21,13 @@ Add the marketplace (once):
 claude plugin marketplace add falconeri/alta-mods
 ```
 
-Install a mod from it (repeat for each mod you want):
+Install a mod from it (repeat for each mod you want), for example the mods panel:
 
 ```sh
-claude plugin install <mod>@alta-mods
+claude plugin install switch-mods@alta-mods
 ```
+
+Then restart Claude Code (or run `/reload-plugins`) and type `/amods`.
 
 Prefer to stay inside a Claude Code session? The same thing, typed at the prompt:
 

@@ -2,5 +2,11 @@
   "name": "alta-mods",
   "description": "Alta's personal Claude Code mods.",
   "owner": { "name": "Alta Falconeri" },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "switch-mods",
+      "source": "./mods/switch-mods",
+      "description": "Type /amods to open a panel that switches every installed plugin and mod on or off. Works in the terminal and the desktop app."
+    }
+  ]
 }

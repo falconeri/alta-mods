@@ -1,0 +1,6 @@
+{
+  "name": "switch-mods",
+  "version": "0.1.0",
+  "description": "Type /amods to open a panel that switches every installed Claude Code plugin and mod on or off, in the terminal and the desktop app.",
+  "author": { "name": "Alta Falconeri" }
+}
