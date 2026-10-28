@@ -1,0 +1,10 @@
+# Claude Code writes each mod's editor types here every time it loads the mod.
+**/.claude-plugin/types/
+.mcpb-cache/
+
+# OS and editor leftovers
+.DS_Store
+Thumbs.db
+*.log
+*~
+*.swp
