@@ -40,6 +40,8 @@ const TICK_MS = 30_000
 const CTX_WARN = 70
 const CTX_HOT = 90
 const BRANCH_MAX = 28
+/** What stands before the branch name, by the "branch icon" setting. */
+const ICONS: Record<string, string> = { symbol: '⎇', 'nerd font': '', text: 'git:' }
 /** Folders to climb looking for .git. */
 const CLIMB = 12
 
@@ -116,6 +118,7 @@ export const register: Register = (on, options) => {
   const ttlMs = ttlMin * 60_000
   const lowAt = asked(options.lowAt, DEFAULT_LOW_AT)
   const startLook: Look = options.startIn === 'detail' ? 'detail' : 'slim'
+  const icon = typeof options.branchIcon === 'string' ? (ICONS[options.branchIcon] ?? ICONS.symbol!) : ICONS.symbol!
   const times = fmtTimes(coldMultiple(ttlMin))
 
   on('session.start', async ($, e, next) => {
@@ -202,7 +205,15 @@ export const register: Register = (on, options) => {
     // app shows the branch in its own sidebar.
     const name = e.surface === 'terminal' ? await read($, branch) : null
     const branchText = name ? (name.length > BRANCH_MAX ? name.slice(0, BRANCH_MAX - 1) + '…' : name) : null
-    const labelWidth = branchText ? branchText.length + 3 : 0
+    const labelWidth = branchText ? icon.length + 1 + branchText.length + 3 : 0
+    // The icon says what the name is; a bare word would read as a title.
+    const branchNode = (key: string, gap: number) =>
+      branchText ? (
+        <Box key={key} flexDirection="row" flexShrink={0} marginRight={gap}>
+          <Text color="claude" bold>{icon} </Text>
+          <Text bold>{branchText}</Text>
+        </Box>
+      ) : null
 
     // ---------- skin ----------
     const dim = art ? { color: MUTED } : { dimColor: true }
@@ -333,8 +344,8 @@ export const register: Register = (on, options) => {
       return (
         <Box flexDirection="column" {...frame}>
           <Box flexDirection="row" paddingX={1}>
-            {branchText ? <Text bold>{branchText}</Text> : null}
-            <Text {...dim}>{branchText ? '  details' : 'details'}</Text>
+            {branchNode('branch', 2)}
+            <Text {...dim}>details</Text>
             {grow}
             {button}
           </Box>
@@ -405,7 +416,7 @@ export const register: Register = (on, options) => {
     const buttonWidth = 10
     // paddingX takes 2; one cell spare keeps the last glyph off the edge.
     const fitsOneRow = labelWidth + usageWidth + fillWidth + cacheWidth + buttonWidth + 3 <= columns
-    const label = branchText ? <Text key="branch" bold>{branchText}   </Text> : null
+    const label = branchNode('branch', 3)
 
     if (fitsOneRow) {
       return (
@@ -425,7 +436,7 @@ export const register: Register = (on, options) => {
     return (
       <Box flexDirection="column" paddingX={1} {...frame}>
         <Box flexDirection={stackUsage ? 'column' : 'row'}>
-          {stackUsage ? (branchText ? <Text bold>{branchText}</Text> : null) : label}
+          {stackUsage ? branchNode('branch', 0) : label}
           {usage}
         </Box>
         <Box flexDirection="row" alignItems="center">

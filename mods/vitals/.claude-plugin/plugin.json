@@ -1,6 +1,6 @@
 {
   "name": "vitals",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A band above your prompt, slim or detailed: usage left in the 5-hour and 7-day windows with reset times and a pace check that warns before you run out, how full the context is, and whether the prompt cache is warm or cold. The terminal shows the git branch; the desktop app gets the ribbon-style art.",
   "author": {
     "name": "Alta Falconeri"
@@ -28,6 +28,17 @@
       "title": "Warn when a window has less than this % left",
       "description": "The window turns red and shows LOW below this.",
       "default": 15
+    },
+    "branchIcon": {
+      "type": "string",
+      "title": "Branch icon (terminal)",
+      "description": "What stands before the git branch in the terminal. 'symbol' is ⎇, 'nerd font' is the git-branch glyph (needs a Nerd Font or Powerline-patched font), 'text' is the word git:.",
+      "default": "symbol",
+      "options": [
+        "symbol",
+        "nerd font",
+        "text"
+      ]
     }
   }
 }

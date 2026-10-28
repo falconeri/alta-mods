@@ -7,13 +7,13 @@ A band above your Claude Code prompt that shows how much usage you have left, wh
 **Slim** is one row. In the terminal the git branch stands first, where a title would:
 
 ```text
-main   5H ●●●●●●●●·· 78% left · 3h 12m   7D ●●●●●···· 52% left · 3d 9h · over pace   CTX 24% · 240k   CACHE warm 42m left   [Details]
+⎇ main   5H ●●●●●●●●·· 78% left · 3h 12m   7D ●●●●●···· 52% left · 3d 9h · over pace   CTX 24% · 240k   CACHE warm 42m left   [Details]
 ```
 
 **Detail** is a row each, with the numbers behind them:
 
 ```text
-main  details                                                                       [Slim]
+⎇ main  details                                                                       [Slim]
 5H    ●●●●●●●●●●●●●●●●●●●····· 78% left (22% used) · resets in 3h 12m (15:12) · on pace
 7D    ●●●●●●●●●●●●········ 52% left (48% used) · resets in 3d 9h (Sat 21:00) · at this rate it runs out in 2d 4h
 CTX   ●●●●●●·················· 24% full · 240k of 1M tokens
@@ -48,6 +48,7 @@ The defaults work. Optional settings, in `/config`:
 | --- | --- | --- |
 | Start each session in | `slim` | `slim` or `detail`. |
 | Prompt cache lasts (minutes) | `60` | Set `5` if your plan has the 5-minute cache. |
+| Branch icon (terminal) | `symbol` | What stands before the branch: `symbol` (⎇), `nerd font` (the git glyph, needs a Nerd Font) or `text` (`git:`). |
 | Warn when a window has less than this % left | `15` | Where a window turns red and shows **LOW**. |
 
 ## Using it

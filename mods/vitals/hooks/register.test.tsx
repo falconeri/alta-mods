@@ -139,6 +139,7 @@ test('the terminal shows the git branch in place of a title; the desktop shows n
 
   const terminal = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect(await terminal.find({ type: 'Text', text: /feature\/bands/ }), 'terminal: the branch').toBeDefined()
+  expect(await terminal.find({ type: 'Text', text: /⎇/ }), 'terminal: an icon says it is a branch').toBeDefined()
   expect(await terminal.find({ type: 'Text', text: /VITALS/ }), 'terminal: no title').toBeUndefined()
   await terminal.unmount()
 
