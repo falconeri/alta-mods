@@ -201,12 +201,14 @@ export const register: Register = (on, options) => {
     const isDetail = current === 'detail'
     const toggle = () => update($, look, () => (isDetail ? 'slim' : 'detail'))
 
-    // The git branch stands where a title would, in the terminal only: the desktop
-    // app shows the branch in its own sidebar.
+    // In the terminal the git branch stands first, because the terminal has no sidebar
+    // that shows it. The desktop app does, so there it is hidden. There is no title.
     const name = e.surface === 'terminal' ? await read($, branch) : null
     const branchText = name ? (name.length > BRANCH_MAX ? name.slice(0, BRANCH_MAX - 1) + '…' : name) : null
     const labelWidth = branchText ? icon.length + 1 + branchText.length + 3 : 0
     // The icon says what the name is; a bare word would read as a title.
+    // The icon says what the name is; a bare word would read as a title. With no branch
+    // (the desktop, or outside a repository) nothing stands first: the band has no title.
     const branchNode = (key: string, gap: number) =>
       branchText ? (
         <Box key={key} flexDirection="row" flexShrink={0} marginRight={gap}>

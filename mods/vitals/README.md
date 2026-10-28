@@ -4,7 +4,7 @@ A band above your Claude Code prompt that shows how much usage you have left, wh
 
 ## What it does
 
-**Slim** is one row. In the terminal the git branch stands first, where a title would:
+**Slim** is one row. There is no title. In the terminal the git branch stands first (the desktop app hides it, as its sidebar shows the branch):
 
 ```text
 ⎇ main   5H ●●●●●●●●·· 78% left · 3h 12m   7D ●●●●●···· 52% left · 3d 9h · over pace   CTX 24% · 240k   CACHE warm 42m left   [Details]
@@ -33,7 +33,7 @@ CACHE ●●●●●●●●●●●●●●●●······· warm · 42m
 | Look | Text in your theme's own colors, so it reads on light and dark | A warm dark card with the art from the [ribbon](https://github.com/robonuggets/ribbon) mod |
 | Cache | The word `CACHE`, `warm` or `cold` | Robo bobbing when warm, frozen in ice when cold, and a WARM or COLD chip |
 | Detail look | Text rows, including a draining cache bar | The usage rows plus the cache card: idle time, tokens in cache as a dot grid of the context window, and the next message as a warm read against a cold re-cache, yours marked **NOW** |
-| Git branch | Shown where a title would be | Not shown: the app's sidebar already has it |
+| Git branch | Shown first on the band, with an icon, because the terminal has no sidebar for it | Hidden: the app's sidebar already shows it |
 
 The terminal can't draw pictures, so it keeps the text form; the desktop gets the art.
 

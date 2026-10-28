@@ -130,7 +130,7 @@ const gitRepo = (on: never) => {
   })
 }
 
-test('the terminal shows the git branch in place of a title; the desktop shows neither', async ($, on) => {
+test('the terminal shows the git branch and no title; the desktop shows neither', async ($, on) => {
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.usage', () => ({ value: usage(22, 48) }))
   gitRepo(on as never)
@@ -161,6 +161,7 @@ test('a folder with no repository shows no branch', async ($, on) => {
 
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect(await ui.find({ type: 'Text', text: /78% left/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /VITALS/ }), 'no branch, and still no title').toBeUndefined()
   await ui.unmount()
 })
 
