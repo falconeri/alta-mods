@@ -225,7 +225,8 @@ export const register: Register = (on, options) => {
     const now = await $.clock.now()
     const view = cacheView((await read($, cache))?.lastAt, now, ttlMs)
 
-    const columns = e.props.bodyColumns ?? e.viewport?.columns ?? 100
+    // The round border takes one cell at each side; every width below is what is left inside it.
+    const columns = (e.props.bodyColumns ?? e.viewport?.columns ?? 100) - 2
     const isTight = columns < TIGHT_AT
     const current: Look = (await read($, look)) ?? startLook
     const isDetail = current === 'detail'
@@ -257,7 +258,8 @@ export const register: Register = (on, options) => {
     const hue = art
       ? { low: 'error', mid: 'warning', ok: 'success', warm: HUE.warm, cold: HUE.cold }
       : { low: 'error', mid: 'warning', ok: 'success', warm: 'success', cold: 'suggestion' }
-    const frame = {}
+    // The same frame prompt-shaper's strip has, so the two read as separate panels.
+    const frame = { borderStyle: 'round', borderDimColor: true } as const
     const toneOf = (_kind: string, left: number): string | undefined => (left < lowAt ? hue.low : left < 40 ? hue.mid : undefined)
     if (art) setTheme(await themeOf($, now, desktopTheme))
 

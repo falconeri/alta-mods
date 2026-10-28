@@ -128,6 +128,25 @@ test('the button is on the band at every width, never pushed off the edge', asyn
   }
 })
 
+test('the band has the round dim border prompt-shaper has, in both looks on both surfaces', async ($, on) => {
+  engine(on)
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.usage', () => ({ value: usage(60, 80) }))
+  mock.clock(on, { now: NOW })
+
+  const isFramed = async (ui: { findAll: (m: unknown) => Promise<{ props?: Record<string, unknown> }[]> }) =>
+    (await ui.findAll({ type: 'Box' })).some(b => b.props?.borderStyle === 'round' && b.props?.borderDimColor === true)
+
+  for (const surface of ['terminal', 'desktop'] as const) {
+    await $.session.start({ cwd: '/', surface, isInteractive: true })
+    const ui = await $.ui.mount({ ...BAND, surface })
+    expect(await isFramed(ui), `${surface}: slim is framed`).toBe(true)
+    await ui.press({ key: 'look-toggle' })
+    expect(await isFramed(ui), `${surface}: detail is framed`).toBe(true)
+    await ui.unmount()
+  }
+})
+
 const gitRepo = (on: never) => {
   const run = on as (...args: unknown[]) => void
   run('session.cwd', () => ({ value: '/work/app' }))

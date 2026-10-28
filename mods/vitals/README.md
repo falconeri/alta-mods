@@ -1,6 +1,6 @@
 # vitals
 
-A band above your Claude Code prompt that shows how much usage you have left, when it resets, whether you are on pace to run out, how full the context is, and whether the prompt cache is warm or cold. It has two looks, **slim** (one row) and **detail** (a row each), and two skins: plain text in the terminal, art in the desktop app. It works on light and dark themes.
+A band above your Claude Code prompt that shows how much usage you have left, when it resets, whether you are on pace to run out, how full the context is, and whether the prompt cache is warm or cold. It has two looks, **slim** (one row) and **detail** (a row each), and two skins: plain text in the terminal, art in the desktop app. It works on light and dark themes. The band sits in a thin rounded frame, the same one prompt-shaper's button strip has, so the two read as separate panels.
 
 ## What it does
 
