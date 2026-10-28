@@ -1,0 +1,33 @@
+{
+  "name": "prompt-shaper",
+  "version": "0.2.0",
+  "description": "Catches a long, messy prompt before Claude reads it, asks only the questions that change the outcome (each with a default), then fills the prompt box with a clear brief: the job, the why, the guardrails, what done means and the assumptions.",
+  "author": { "name": "Alta Falconeri" },
+  "userConfig": {
+    "minWords": {
+      "type": "number",
+      "title": "Shortest prompt to shape",
+      "description": "Prompts with fewer words than this are sent as typed.",
+      "default": 60
+    },
+    "maxQuestions": {
+      "type": "number",
+      "title": "Most questions to ask",
+      "description": "Only questions whose answer changes the outcome are asked, up to this many (0 to 5). 0 never asks.",
+      "default": 3
+    },
+    "workingRules": {
+      "type": "boolean",
+      "title": "Add the working rules",
+      "description": "End the brief with rules for Claude: restate and say what a bare go does before starting, finish with a Not done list, and stop at a draft for anything outward facing.",
+      "default": true
+    },
+    "model": {
+      "type": "string",
+      "title": "Model that writes the questions and the brief",
+      "description": "Haiku is fastest and cheapest; Sonnet or Opus write sharper briefs.",
+      "default": "haiku",
+      "options": ["haiku", "sonnet", "opus"]
+    }
+  }
+}

@@ -7,6 +7,7 @@ My personal [Claude Code](https://claude.com/claude-code) mods, shared as one pl
 | Mod | What it does |
 | --- | --- |
 | [`switch-mods`](mods/switch-mods) | Type `/amods` to open a panel that switches every installed plugin and mod on or off. Works in the terminal and the desktop app. |
+| [`prompt-shaper`](mods/prompt-shaper) | Catches a long, messy prompt, asks only the questions that change the outcome (each with a default), then fills the prompt box with a clear brief: the job, the why, the guardrails, what done means and the assumptions, plus working rules for Claude. |
 
 ## Requirements
 
