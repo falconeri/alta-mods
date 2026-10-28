@@ -1,0 +1,34 @@
+{
+  "name": "vitals",
+  "version": "0.1.0",
+  "description": "A slim band above your prompt: usage left in the 5-hour and 7-day windows with reset times and a pace check that warns before you run out, how full the context is, and whether the prompt cache is warm or cold.",
+  "author": { "name": "Alta Falconeri" },
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "startIn": {
+      "type": "string",
+      "title": "Start each session in",
+      "description": "The band's look when a session starts. Press the button on the band to switch for the rest of the session.",
+      "default": "slim",
+      "options": ["slim", "detail"]
+    },
+    "cacheMinutes": {
+      "type": "number",
+      "title": "Prompt cache lasts (minutes)",
+      "description": "How long after Claude's last request the cache counts as warm. 60 on plans with the 1-hour cache, 5 otherwise.",
+      "default": 60
+    },
+    "inputPrice": {
+      "type": "number",
+      "title": "Your model's input price ($ per million tokens)",
+      "description": "Used to estimate what the next message costs. 0 hides the dollar figure and shows tokens only.",
+      "default": 0
+    },
+    "lowAt": {
+      "type": "number",
+      "title": "Warn when a window has less than this % left",
+      "description": "The window turns red and shows LOW below this.",
+      "default": 15
+    }
+  }
+}

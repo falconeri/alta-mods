@@ -9,6 +9,7 @@ My personal [Claude Code](https://claude.com/claude-code) mods, shared as one pl
 | [`switch-mods`](mods/switch-mods) | Type `/amods` to open a panel that switches every installed plugin and mod on or off. Works in the terminal and the desktop app. |
 | [`prompt-shaper`](mods/prompt-shaper) | Catches a long, messy prompt, asks only the questions that change the outcome (each with a default), then fills the prompt box with a clear brief: the job, the why, the guardrails, what done means and the assumptions, plus working rules for Claude. |
 | [`sess-handoff`](mods/sess-handoff) | Writes a detailed handoff prompt of the whole chat at 250k tokens, when the prompt cache goes cold, or when you type `sess-handoff`. Waits for subagents to finish, asks before opening a fresh chat seeded with it, and can copy it for a teammate. |
+| [`vitals`](mods/vitals) | A band above your prompt, slim or detailed: usage left in the 5-hour and 7-day windows with reset times and a pace warning before you run out, how full the context is, and whether the prompt cache is warm or cold. Works in the terminal and desktop app, light or dark. |
 
 ### What each mod does
 
@@ -25,6 +26,10 @@ None of the mods needs an account, key or setup beyond installing it: the defaul
 **[`sess-handoff`](mods/sess-handoff)** writes a handoff of the whole chat so you can continue in a fresh chat or pass the work to a teammate.
 - Use it: type `sess-handoff`. It also offers itself at 250k tokens, or when you return after a pause and the prompt cache has gone cold. It waits for subagents to finish, and never opens a fresh chat until you confirm.
 - Settings (in `/config`): token trigger (250000), minutes until the cache counts as cold (5), smallest chat to offer on a cold cache (50000), folder for saved handoffs (`~/.claude/handoffs`).
+
+**[`vitals`](mods/vitals)** puts a band above the prompt with your usage, context and prompt cache.
+- Use it: nothing to do; it appears after the first reply. Press **Details** / **Slim** on the band to switch looks.
+- Settings (in `/config`): start in slim or detail (slim), cache lifetime in minutes (60), your input price per million tokens for dollar estimates (0 = tokens only), warn below this % left (15).
 
 ## Requirements
 
