@@ -193,7 +193,6 @@ export const register: Register = (on, options) => {
     const ctx = await read($, context)
     const now = await $.clock.now()
     const view = cacheView((await read($, cache))?.lastAt, now, ttlMs)
-    if (list.length === 0 && !view && !ctx) return next(e)
 
     const columns = e.props.bodyColumns ?? e.viewport?.columns ?? 100
     const isTight = columns < TIGHT_AT
@@ -234,6 +233,17 @@ export const register: Register = (on, options) => {
       </Box>
     )
     const grow = <Box key="grow" flexGrow={1} />
+
+    // Before the first reply the engine has no usage figures and there is no cache to track:
+    // say so, rather than leave the band empty and look as if it were missing.
+    if (list.length === 0 && !view && !ctx) {
+      return (
+        <Box flexDirection="row" paddingX={1} alignItems="center" {...frame}>
+          {branchNode('branch', 3)}
+          <Text {...dim}>usage, context and cache appear after your first reply</Text>
+        </Box>
+      )
+    }
 
     const share = ctx && ctx.window > 0 ? Math.min(100, Math.round((ctx.tokens / ctx.window) * 100)) : null
     const ctxTone = share === null ? ink : share >= CTX_HOT ? hue.low : share >= CTX_WARN ? hue.mid : ink

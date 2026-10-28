@@ -40,7 +40,7 @@ The terminal can't draw pictures, so it keeps the text form; the desktop gets th
 ## Setup
 
 1. Install it (see [Install](#install)) and restart Claude Code, or run `/reload-plugins`.
-2. Send a first message. The band appears once the first reply brings usage figures.
+2. Send a first message. Until then the band shows a short line; the usage figures arrive with the first reply.
 
 The defaults work. Optional settings, in `/config`:
 
@@ -69,7 +69,8 @@ The defaults work. Optional settings, in `/config`:
 
 ## Troubleshooting
 
-- **No band**: the first reply has not arrived yet, or a survey is showing. The band yields to surveys.
+- **Only a short line before your first message**: that is expected. Claude Code reports your usage with the first reply and there is no cache until a request is sent, so the band says so and fills in after your first message. A resumed chat fills in at once.
+- **No band at all**: a survey is showing (the band yields to surveys), or the mod is not installed or loaded in this app.
 - **No `5H` / `7D`**: you are not on a subscription plan, or the first response has not reported them yet.
 - **Cache says cold when it isn't (or the reverse)**: change *Prompt cache lasts* to match your plan.
 - **No branch**: it is shown in the terminal only, and only inside a git repository.

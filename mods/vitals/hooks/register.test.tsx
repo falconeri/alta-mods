@@ -188,3 +188,17 @@ test('desktop draws Robo and the cache card in the detail look; the terminal dra
   expect(await terminal.find({ type: 'Text', text: /about 20×/ }), 'terminal detail: a cold cache as a multiple').toBeDefined()
   await terminal.unmount()
 })
+
+test('before the first reply the band says what it is waiting for, on both skins', async ($, on) => {
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  // A fresh session: no rate-limit reading yet, no context size, no request sent.
+  on('session.usage', () => ({ value: { startedAt: 0, context: { window: 1_000_000 }, rateLimits: [] } }))
+  mock.clock(on, { now: NOW })
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    expect(await ui.find({ type: 'Text', text: /after your first reply/ }), `${surface}: a placeholder, not an empty band`).toBeDefined()
+    await ui.unmount()
+  }
+})
