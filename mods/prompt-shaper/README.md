@@ -105,6 +105,7 @@ Open `/config` and look for the prompt-shaper rows:
 ## Troubleshooting
 
 - **I do not see the button**: check that the mod is on in `/amods` or `claude plugin list`. It is drawn in the band above the prompt box, on the terminal and the desktop app, and it hides while a survey is showing.
+- **I see the strip more than once**: update to 0.3.2, which draws the strip only once however many times the band is built. If it still repeats, check `claude plugin list` for a second copy of prompt-shaper.
 - **Nothing happens when I press it**: the box is empty, already holds a finished brief, or is over 20,000 characters. A short notice says which.
 - **My prompt disappeared**: it should not. Your words stay in the box until the brief is ready, and after a cancel or a failure they are untouched.
 - **The questions are not useful**: set **Most questions to ask** to `0` to skip them, or to a lower number. Switch **Model** to `sonnet` or `opus` for sharper questions.

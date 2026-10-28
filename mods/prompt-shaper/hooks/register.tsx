@@ -22,6 +22,7 @@ const MAX_QUESTIONS_CAP = 5
 const MAX_CHARS = 20_000
 const CALL_MS = 45_000
 const DEFAULT_TAG = ' (default)'
+const STRIP = 'prompt-shaper'
 // The shape of a finished brief: it passes through without being shaped again.
 const SHAPED = /^## The job\b[\s\S]*^## Done means\b/m
 
@@ -197,6 +198,14 @@ const drawn = (tree: unknown) => {
   return !!t && (t.type !== 'Box' || (t.children?.length ?? 0) > 0)
 }
 
+// Whether a tree already holds this mod's strip (found by its key). In the terminal the
+// band can come back from `next` with the strip in it; adding another would stack them.
+const holdsStrip = (tree: unknown): boolean => {
+  const t = tree as { props?: { key?: unknown }; children?: unknown[] } | null | undefined
+  if (!t || typeof t !== 'object') return false
+  return t.props?.key === STRIP || (t.children?.some(holdsStrip) ?? false)
+}
+
 export const register: Register = (on, options) => {
   const model = typeof options.model === 'string' && options.model ? options.model : 'haiku'
   const asked = Number(options.maxQuestions)
@@ -206,14 +215,14 @@ export const register: Register = (on, options) => {
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     // Another mod may draw this band too (vitals does): keep its tree and stack ours under it.
     const below = await next(e)
-    if (e.props.hasSurvey) return below
+    if (e.props.hasSurvey || holdsStrip(below)) return below
 
     const { Box, Button, Text } = $.ui.resolve(e)
     const isWorking = await read($, working)
     // A mod cannot draw inside the prompt box; the nearest seat is the band above it. It is
     // framed and named so it reads as its own mod, apart from any other band (vitals).
     const row = (
-      <Box key="prompt-shaper" flexDirection="row" paddingX={1} alignItems="center" borderStyle="round" borderDimColor>
+      <Box key={STRIP} flexDirection="row" paddingX={1} alignItems="center" borderStyle="round" borderDimColor>
         <Text dimColor>prompt-shaper</Text>
         <Box key="grow" flexGrow={1} />
         {isWorking ? (

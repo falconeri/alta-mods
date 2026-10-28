@@ -26,7 +26,7 @@ New customers should finish signing up.
 ## Assumptions
 - The current design system stays.`
 
-type Setup = { other?: boolean; typed?: string; gaps?: string; brief?: string; filled?: boolean; refusal?: 'no_composer'; answer?: string; dismiss?: boolean }
+type Setup = { other?: boolean; twin?: boolean; typed?: string; gaps?: string; brief?: string; filled?: boolean; refusal?: 'no_composer'; answer?: string; dismiss?: boolean }
 
 async function arrange($: never, on: never, setup: Setup = {}) {
   const log = {
@@ -64,7 +64,16 @@ async function arrange($: never, on: never, setup: Setup = {}) {
   )
   // Nothing beneath the mod stands for the engine: an empty band, or another mod's.
   run('ui.render', ($: { ui: { resolve: (e: unknown) => any } }, e: unknown) => {
-    const { Box, Text } = $.ui.resolve(e)
+    const { Box, Button, Text } = $.ui.resolve(e)
+    // A copy of this mod beneath: its strip, key and all, comes back through next().
+    if (setup.twin) {
+      return (
+        <Box key="prompt-shaper">
+          <Text>prompt-shaper</Text>
+          <Button key="shape" label="Shape prompt" onPress={() => {}} />
+        </Box>
+      )
+    }
     return setup.other ? <Text>vitals band</Text> : <Box />
   })
   run('prompt.read', async () => ({ value: { text: setup.typed ?? MESSY, cursor: 0 } }))
@@ -216,5 +225,16 @@ test('another mod band stays and the button stacks under it', { timeoutMs: 20000
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect(await ui.find({ type: 'Text', text: /vitals band/ }), 'the other band is kept').toBeDefined()
   expect(await ui.find(BUTTON), 'the button is added').toBeDefined()
+  await ui.unmount()
+})
+
+test('a band that already holds the strip is not stacked again', { timeoutMs: 20000 }, async ($, on) => {
+  await arrange($ as never, on as never, { twin: true })
+  mock.clock(on, { now: 1 })
+  await start($ as never, 'terminal')
+
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.findAll({ type: 'Text', text: /^prompt-shaper$/ }), 'one strip, not two').toHaveLength(1)
+  expect(await ui.find(BUTTON), 'the button is still there').toBeDefined()
   await ui.unmount()
 })
