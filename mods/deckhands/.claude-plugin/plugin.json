@@ -1,0 +1,21 @@
+{
+  "name": "deckhands",
+  "version": "0.1.0",
+  "description": "A pixel-art progress band above the prompt with the Claude Code mascot walking along it, and a side panel that turns every subagent into a named crew member (shipwright, navigator, painter, lookout, deckhand) assigned automatically. No cost figures, built for Claude accounts.",
+  "author": {
+    "name": "Alta Falconeri"
+  },
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "band": {
+      "type": "string",
+      "title": "Progress band",
+      "description": "Show the progress band above the prompt. The crew panel works either way. Type /deck-bar in a session to switch it for good.",
+      "default": "on",
+      "options": [
+        "on",
+        "off"
+      ]
+    }
+  }
+}

@@ -19,6 +19,11 @@
       "description": "A band above your prompt, slim or detailed: usage left in the 5-hour and 7-day windows with reset times and a pace warning before you run out, how full the context is, and whether the prompt cache is warm or cold. Git branch and plain text in the terminal, ribbon-style art on desktop, light or dark."
     },
     {
+      "name": "deckhands",
+      "source": "./mods/deckhands",
+      "description": "A pixel-art progress band above the prompt with the Claude Code mascot walking along it, and a side panel that turns every subagent into a named crew member (shipwright, navigator, painter, lookout, deckhand), assigned automatically. Terminal and desktop, no cost figures."
+    },
+    {
       "name": "sess-handoff",
       "source": "./mods/sess-handoff",
       "description": "Writes a detailed handoff prompt of the whole chat at 250k tokens, when the prompt cache goes cold, or when you type sess-handoff. Waits for subagents to finish, asks before opening a fresh chat seeded with it, and can copy it for a teammate."

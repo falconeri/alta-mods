@@ -10,6 +10,7 @@ My personal [Claude Code](https://claude.com/claude-code) mods, shared as one pl
 | [`prompt-shaper`](mods/prompt-shaper) | A Shape prompt button above the prompt box. Press it to turn what you typed into a clear brief: it asks only the questions that change the outcome (each with a default), then fills the prompt box with the job, the why, the guardrails, what done means and the assumptions, plus working rules for Claude. Never automatic. |
 | [`sess-handoff`](mods/sess-handoff) | Writes a detailed handoff prompt of the whole chat at 250k tokens, when the prompt cache goes cold, or when you type `sess-handoff`. Waits for subagents to finish, asks before opening a fresh chat seeded with it, and can copy it for a teammate. |
 | [`vitals`](mods/vitals) | A band above your prompt, slim or detailed: usage left in the 5-hour and 7-day windows with reset times and a pace warning before you run out, how full the context is, and whether the prompt cache is warm or cold. Git branch and plain text in the terminal, ribbon-style art on desktop, light or dark. |
+| [`deckhands`](mods/deckhands) | A pixel-art progress band above the prompt with the Claude Code mascot walking along it, and a side panel that turns every subagent into a named crew member (shipwright, navigator, painter, lookout, deckhand), assigned automatically. Terminal and desktop, no cost figures. |
 
 ### What each mod does
 
@@ -30,6 +31,10 @@ None of the mods needs an account, key or setup beyond installing it: the defaul
 **[`vitals`](mods/vitals)** puts a band above the prompt with your usage, context and prompt cache.
 - Use it: nothing to do; it appears after the first reply. Press **Details** / **Slim** on the band to switch looks. The terminal shows the git branch and plain text; the desktop app gets the art.
 - Settings (in `/config`): start in slim or detail (slim), cache lifetime in minutes (60), warn below this % left (15).
+
+**[`deckhands`](mods/deckhands)** shows Claude's progress as a pixel-art bar with the mascot, and your subagents as a crew.
+- Use it: nothing to do; the band appears above the prompt while Claude works, and the crew panel opens when the first subagent starts (or type `/deck`). Each subagent gets a name and a role from its task. `/deck-bar` hides or shows the band, `/deck-clear` resets the crew.
+- Settings (in `/config`): progress band on or off (on).
 
 ## Requirements
 
