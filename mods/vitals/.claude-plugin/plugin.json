@@ -1,6 +1,6 @@
 {
   "name": "vitals",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "A band above your prompt, slim or detailed: usage left in the 5-hour and 7-day windows with reset times and a pace check that warns before you run out, how full the context is, and whether the prompt cache is warm or cold. The terminal shows the git branch; the desktop app gets the ribbon-style art.",
   "author": {
     "name": "Alta Falconeri"

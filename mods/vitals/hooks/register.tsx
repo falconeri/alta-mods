@@ -140,6 +140,13 @@ const hasDrawing = (tree: unknown) => {
   return !!t && (t.type !== 'Box' || (t.children?.length ?? 0) > 0)
 }
 
+// Whether a tree holds an element with this key (another mod's band, found by its key).
+const holdsKey = (tree: unknown, key: string): boolean => {
+  const t = tree as { props?: { key?: unknown }; children?: unknown[] } | null | undefined
+  if (!t || typeof t !== 'object') return false
+  return t.props?.key === key || (t.children?.some(c => holdsKey(c, key)) ?? false)
+}
+
 export const register: Register = (on, options) => {
   const ttlMin = asked(options.cacheMinutes, DEFAULT_CACHE_MINUTES) || DEFAULT_CACHE_MINUTES
   const ttlMs = ttlMin * 60_000
@@ -214,7 +221,10 @@ export const register: Register = (on, options) => {
 
     const ui = $.ui.resolve(e)
     const { Box, Button, Text } = ui
-    const withBelow = <T,>(tree: T) => (hasDrawing(below) ? <Box flexDirection="column">{tree}{below}</Box> : tree)
+    // deckhands' progress band is always the top one: when it came back in `below`, it stands first.
+    const withBelow = <T,>(tree: T) =>
+      !hasDrawing(below) ? tree : holdsKey(below, 'deckhands-band') ? <Box flexDirection="column">{below}{tree}</Box> : <Box flexDirection="column">{tree}{below}</Box>
+
     // Svg draws on desktop, mobile and VS Code; the terminal gets the text skin.
     // Ask the surface, not the table: the terminal's table still lists Svg.
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null

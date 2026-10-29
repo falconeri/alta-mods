@@ -59,6 +59,26 @@ test('slim is one row; the button opens the detail look; both on terminal and de
   }
 })
 
+test('the deckhands progress band stays above the vitals band', async ($, on) => {
+  on('ui.render', ($: any, e: any) => {
+    const { Box, Text } = $.ui.resolve(e)
+    return <Box key="deckhands-band"><Text>progress band</Text></Box>
+  })
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.usage', () => ({ value: usage(22, 48) }))
+  mock.clock(on, { now: NOW })
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  const texts = (await ui.findAll({ type: 'Text' })).map(t => t.text ?? '')
+  const above = texts.indexOf('progress band')
+  const vitals = texts.findIndex(t => /78% left/.test(t))
+  expect(above, 'the progress band is drawn').toBeGreaterThan(-1)
+  expect(vitals, 'vitals is drawn').toBeGreaterThan(-1)
+  expect(above, 'progress band first').toBeLessThan(vitals)
+  await ui.unmount()
+})
+
 test('a window under the warn line says LOW; a survey gets the band to itself', async ($, on) => {
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.usage', () => ({ value: usage(92, 10) }))
