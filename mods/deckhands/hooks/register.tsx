@@ -35,6 +35,8 @@ import {
 // Zero token cost: it listens to events that already happen and draws locally.
 
 const PANE = 'deckhands-crew'
+/** The key of the band's root: other mods look for it to keep the band on top. */
+const BAND = 'deckhands-band'
 const TITLE = 'Deckhands'
 /** The animation clock: ten frames a second, only while something moves. */
 const TICK_MS = 100
@@ -348,7 +350,14 @@ export const register: Register = (on, options) => {
     const { Box, Text, Button } = els
     const openPane = () => $.ui.open({ id: PANE, title: TITLE }).catch(() => {})
     const crewLabel = `×${members.length}`
-    const withBelow = (tree: any) => (hasDrawing(below) ? <Box flexDirection="column">{tree}{below}</Box> : tree)
+    // The band is always the top one: it stands first over whatever is beneath it, and its
+    // key tells a mod above it (vitals) to stack itself under it, whatever the plugin order.
+    const withBelow = (tree: any) => (
+      <Box key={BAND} flexDirection="column">
+        {tree}
+        {hasDrawing(below) ? below : null}
+      </Box>
+    )
 
     // ── terminal: one line, the mascot walking inside its own bar ──
     if (e.surface === 'terminal') {

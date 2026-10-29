@@ -213,6 +213,20 @@ test('the band waits for the person while a question is open', async ($, on) => 
   await ui.unmount()
 })
 
+test('the band stands above whatever another mod draws beneath it', async ($, on) => {
+  on('ui.render', { component: 'AbovePrompt' }, ($: any, e: any) => {
+    const { Box, Text } = $.ui.resolve(e)
+    return <Box><Text>other band</Text></Box>
+  })
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount(bandAt(surface))
+    const texts = (await ui.findAll({ type: 'Text' })).map(t => t.text)
+    expect(texts.indexOf('other band'), `${surface}: the other band is drawn`).toBeGreaterThan(-1)
+    expect(texts.findIndex(t => /Thinking/.test(t ?? '')), `${surface}: ours first`).toBeLessThan(texts.indexOf('other band'))
+    await ui.unmount()
+  }
+})
+
 test('the band leaves a survey, and a narrow terminal, to whoever is beneath it', async ($, on) => {
   on('ui.render', { component: 'AbovePrompt' }, ($: any, e: any) => {
     const { Text } = $.ui.resolve(e)
