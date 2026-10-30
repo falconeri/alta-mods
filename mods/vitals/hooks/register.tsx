@@ -177,8 +177,9 @@ export const register: Register = (on, options) => {
   })
 
   // A cleared or compacted chat starts over; a resumed one knows how long it was away.
+  // The seeding comes before `next`: a hook above that settles early aborts whatever
+  // would run after it, and the band would never learn what the chat held.
   on('classic.SessionStart', async ($, e, next) => {
-    const r = await next(e)
     if (e.source === 'clear' || e.source === 'compact') {
       await update($, cache, () => null)
       await update($, context, () => null)
@@ -191,7 +192,7 @@ export const register: Register = (on, options) => {
         await update($, context, () => ({ tokens, window }))
       }
     }
-    return r
+    return next(e)
   }).catch(($, e, next) => next(e)) // a band that fails to seed never holds up the session
 
   // Each main-thread request reads or writes the cache, so its start resets the clock.
