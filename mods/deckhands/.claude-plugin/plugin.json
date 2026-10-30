@@ -1,6 +1,6 @@
 {
   "name": "deckhands",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A pixel-art progress band above the prompt with the Claude Code mascot walking along it, and a side panel that turns every subagent into a named crew member (shipwright, navigator, painter, lookout, deckhand) assigned automatically. No cost figures, built for Claude accounts.",
   "author": {
     "name": "Alta Falconeri"

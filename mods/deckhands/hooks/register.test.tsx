@@ -213,6 +213,34 @@ test('the band waits for the person while a question is open', async ($, on) => 
   await ui.unmount()
 })
 
+test('the band claims a permission wait only when a person is asked', async ($, on) => {
+  engine(on)
+  let asked: unknown
+  on('classic.PermissionRequest', () => ({}))
+  ;(on as any)('tool.check', { tool: 'Bash' }, () => ({ decision: 'ask' }))
+  ;(on as any)('tool.call', { tool: 'Read' }, async () => {
+    await ($.classic as any).PermissionRequest({ tool_name: 'Read', tool_input: {} })
+    const ui = await $.ui.mount(bandAt('terminal'))
+    asked = await ui.find({ text: /Needs your permission/ })
+    await ui.unmount()
+    return { result: { content: '' } }
+  })
+
+  // The mode answers this ask in the person's place (auto, accept-edits): no dialog, no wait.
+  await ($.tool.check as any)({ tool: 'Bash', input: { command: 'ls' } })
+  const settled = await $.ui.mount(bandAt('terminal'))
+  expect(await settled.find({ text: /Needs your permission/ }), 'an ask the mode settles shows no wait').toBeUndefined()
+  await settled.unmount()
+
+  // A dialog is open for the person.
+  await ($.tool.call as any)({ tool: 'Read', input: { file_path: '/x' } })
+  expect(asked, 'an open permission dialog does').toBeDefined()
+
+  const after = await $.ui.mount(bandAt('terminal'))
+  expect(await after.find({ text: /Needs your permission/ }), 'and the wait ends with the call').toBeUndefined()
+  await after.unmount()
+})
+
 test('the band stands above whatever another mod draws beneath it', async ($, on) => {
   on('ui.render', { component: 'AbovePrompt' }, ($: any, e: any) => {
     const { Box, Text } = $.ui.resolve(e)

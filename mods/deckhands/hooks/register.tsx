@@ -280,11 +280,12 @@ export const register: Register = (on, options) => {
     return r
   }).catch(($, e, next) => next(e))
 
-  // a permission request: Claude, or a subagent, waits for you
-  on('tool.check', async ($, e, next) => {
-    const r = await next(e)
-    if (r.decision === 'ask' && e.tool_use_id) await update($, fx, f => ({ ...f, asking: f.asking ?? ('permission' as const) })).catch(() => {})
-    return r
+  // A permission dialog is open: Claude, or a subagent, waits for you. This event fires only
+  // when a person is asked; tool.check also says `ask` where the mode answers in their place
+  // (auto, accept-edits), and the band would claim a wait that never happens.
+  on('classic.PermissionRequest', async ($, e, next) => {
+    await update($, fx, f => ({ ...f, asking: f.asking ?? ('permission' as const) })).catch(() => {})
+    return next(e)
   }).catch(($, e, next) => next(e))
 
   // ── The band above the prompt ─────────────────────────────────────────
